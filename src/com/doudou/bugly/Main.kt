@@ -1,6 +1,12 @@
 package com.doudou.bugly
 
+import com.doudou.bugly.callback.Callback
 import com.doudou.bugly.manager.BuglyManager
+import com.doudou.bugly.manager.CallStackDecoder
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileInputStream
+import java.lang.Exception
 
 enum class ArgsKey(val value: String) {
     KEY_APP_ID("-appId"),
@@ -17,6 +23,8 @@ enum class ArgsKey(val value: String) {
     KEY_OUT_DIR("-out"),
     KEY_NDK_HOME("-ndk")
 }
+
+const val KEY_DECODER_ADDR = "-decode"
 
 const val APP_VER_SPLIT = "&"
 
@@ -39,6 +47,11 @@ fun main(vararg args: String) {
             System.getenv()[tempNdk]
         } else {
             tempNdk
+        }
+
+        if (argsMap.containsKey(KEY_DECODER_ADDR)) {
+            decodeAddrs(argsMap, ndk)
+            return
         }
 
         ArgsKey.values().forEachIndexed { _, argsKey ->
@@ -69,6 +82,63 @@ fun main(vararg args: String) {
         Log.e(tr)
         Thread.sleep(10_000)
     }
+}
+
+private fun decodeAddrs(argsMap: MutableMap<String, String>, ndk: String?) {
+    argsMap[KEY_DECODER_ADDR]?.let { content ->
+        if (ndk.isNullOrEmpty()) {
+            Log.e("ndk is null")
+            pause()
+            return
+        }
+        val unity = argsMap[getKey(ArgsKey.KEY_UNITY_SO_PATH.value)] ?: ""
+        if (unity.isNullOrEmpty()) {
+            Log.e("unity so is null")
+            pause()
+            return
+        }
+        val il2cpp = argsMap[getKey(ArgsKey.KEY_IL_2_CPP_SO_PATH.value)] ?: ""
+        if (il2cpp.isNullOrEmpty()) {
+            Log.e("il2cpp so is null")
+            pause()
+            return
+        }
+        try {
+            val decodeFile = File(content)
+            val decodeContent = if (decodeFile.exists() && decodeFile.isFile) {
+                FileInputStream(decodeFile).use {  fis ->
+                    ByteArrayOutputStream().use { baos ->
+                        val buff = ByteArray(1024)
+                        var len: Int
+                        while (fis.read(buff).also { len = it } != -1) {
+                            baos.write(buff, 0, len)
+                        }
+                        String(baos.toByteArray(), Charsets.UTF_8).trim { it <= ' ' }
+                    }
+                }
+            } else {
+                content
+            }
+            decodeContent?.let {
+                CallStackDecoder.decodeCallStack(it, "$ndk", unity, il2cpp, "decode-addrs", object : Callback<String> {
+                    override fun onFail(code: Int, msg: String?) {
+                        Log.e("decode fail: $code, $msg")
+                    }
+
+                    override fun onSuccess(t: String) {
+                        Log.e("decode success: \n$t")
+                    }
+
+                })
+                pause(20_000)
+                return
+            }
+        } catch (e: Exception) {
+            Log.e(e)
+        }
+    }
+    Log.e("decode content is null!")
+    pause()
 }
 
 private fun generatorExcel(appVer: String?, argsMap: MutableMap<String, String>, ndk: String?) {
