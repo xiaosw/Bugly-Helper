@@ -1,5 +1,6 @@
 package com.doudou.bugly.manager
 
+import com.doudou.bugly.Log
 import com.doudou.bugly.callback.Callback
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -14,19 +15,21 @@ object CallStackDecoder {
     private val CMD = "${System.getenv()["NDK_HOME"]}\\toolchains\\aarch64-linux-android-4.9\\prebuilt\\windows-x86_64\\bin\\aarch64-linux-android-addr2line.exe -C -f -e "
     private const val IGNORE_DECODE = "??:?"
 
-    fun decodeCallStack(callStack: String, ndk: String, unitySoPath: String, il2cppSoPath: String, callback: Callback<String>) {
+    fun decodeCallStack(callStack: String, ndk: String, unitySoPath: String, il2cppSoPath: String
+                        , appVer: String? = null, callback: Callback<String>) {
         val addrs = parseAddrs(callStack)
         if (addrs.isEmpty()) {
             callback?.onSuccess(callStack)
             return
         }
-        decodeCallStack(addrs, ndk, unitySoPath, il2cppSoPath, callback)
+        decodeCallStack(addrs, ndk, unitySoPath, il2cppSoPath, appVer, callback)
     }
 
-    fun decodeCallStack(addrsList: MutableList<Addrs>, ndk: String, unitySoPath: String, il2cppSoPath: String, callback: Callback<String>) {
+    fun decodeCallStack(addrsList: MutableList<Addrs>, ndk: String, unitySoPath: String, il2cppSoPath: String
+                        , appVer: String? = null, callback: Callback<String>) {
 
         val cmdPrefix = "$ndk\\toolchains\\aarch64-linux-android-4.9\\prebuilt\\windows-x86_64\\bin\\aarch64-linux-android-addr2line.exe -C -f -e "
-        object : Thread(){
+        object : Thread("${appVer ?: "all_version"}_decode_stack"){
             override fun run() {
                 super.run()
                 val sb = StringBuilder()
@@ -45,7 +48,7 @@ object CallStackDecoder {
                             }
                         }?.let { soPath ->
                             val cmd = "$cmdPrefix $soPath ${addrs.addrs()}"
-                            // println("cmd = $cmd")
+//                            Log.i("cmd = $cmd")
                             Runtime.getRuntime().exec(cmd)?.let { process ->
                                 BufferedReader(InputStreamReader(process.inputStream)).use { br ->
                                     var line: String?

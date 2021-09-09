@@ -3,6 +3,7 @@ package com.doudou.bugly.manager
 import com.doudou.bugly.bean.*
 import com.doudou.bugly.callback.Callback
 import com.doudou.bugly.http.OkHttpUtil
+import com.doudou.bugly.Log
 import com.google.gson.Gson
 import java.lang.Exception
 import java.util.concurrent.atomic.AtomicInteger
@@ -33,13 +34,13 @@ object BuglyManager {
     private const val URL_APP_LIST = "https://bugly.qq.com/v4/api/old/app-list"
 
     fun queryAppList(token: String, oldCookie: String, callback: Callback<AppListResponse>) {
-        println("query app list...")
+        Log.i("query app list...")
         OkHttpUtil.get(token, oldCookie, URL_APP_LIST, object : OkHttpUtil.CommonCallback {
             override fun onComplete(code: Int, response: String?) {
-                println("query app list code = $code")
+                Log.i("query app list code = $code")
                 response?.let { responseJson ->
                     val appList = Gson().fromJson(responseJson, AppListResponse::class.java)
-                    println("query app list complete...${appList.data?.size}")
+                    Log.i("query app list complete...${appList.data?.size}")
                     callback.onSuccess(appList)
                     return
                 }
@@ -53,12 +54,12 @@ object BuglyManager {
                            callback: Callback<MutableList<IssueAnalysis>>) {
         val url = "https://bugly.qq.com/v4/api/old/get-issue-list?start=${pageIndex * pageSize}&searchType=errorType&exceptionTypeList=Crash,Native&pid=1&platformId=1&date=last_7_day&sortOrder=desc&status=0&rows=${pageSize}&sortField=uploadTime&appId=${appId}&fsn=831bde36-fd95-4179-b836-df19b3a77b11"
 //        val url = "https://bugly.qq.com/v4/api/old/get-issue-list?start=${pageIndex * pageSize}&searchType=errorType&exceptionTypeList=Crash,Native&pid=1&platformId=1&startDateStr=2021-08-05&endDateStr=2021-08-05&sortOrder=desc&status=0&rows=${pageSize}&sortField=uploadTime&appId=${appId}&fsn=831bde36-fd95-4179-b836-df19b3a77b11"
-        println("queryCrashAnalysis...")
+        Log.i("queryCrashAnalysis...")
         OkHttpUtil.get(token, cookie, url, object : OkHttpUtil.CommonCallback {
             override fun onComplete(code: Int, response: String?) {
-                println("code = $code, response = $response")
+                Log.i("code = $code, response = $response")
                 response?.let { responseJson ->
-                    println("queryCrashAnalysis parse...")
+                    Log.i("queryCrashAnalysis parse...")
                     parseCrashAnalysisResponse(appId, responseJson).let {
                         callback.onSuccess(it)
                     }
@@ -105,11 +106,11 @@ object BuglyManager {
     }
 
     fun queryStackDetail(token: String, cookie: String, url: String, appId: String, callback: Callback<StackDetail>) {
-//        println("queryStackDetail...")
-//        println("queryStackDetail: $url")
+//        i("queryStackDetail...")
+//        i("queryStackDetail: $url")
         OkHttpUtil.get(token, cookie, url, object : OkHttpUtil.CommonCallback {
             override fun onComplete(code: Int, decode: String?) {
-//                println("queryStackDetail complete...")
+//                i("queryStackDetail complete...")
                 if (code != 200) {
                     callback.onFail(code, null)
                     return
@@ -139,7 +140,7 @@ object BuglyManager {
     }
 
     fun queryStackDetailByHash(token: String, cookie: String, url: String, callback: Callback<StackDetail>) {
-//        println("queryStackDetailByHash: $url")
+//        i("queryStackDetailByHash: $url")
         OkHttpUtil.get(token, cookie, url, object : OkHttpUtil.CommonCallback {
             override fun onComplete(code: Int, decode: String?) {
                 if (code != 200) {
@@ -147,7 +148,7 @@ object BuglyManager {
                     return
                 }
                 val responseJson = decode ?: ""
-                // println("queryStackDetailByHash: response = $responseJson")
+                // i("queryStackDetailByHash: response = $responseJson")
                 if (responseJson.isEmpty()) {
                     callback.onFail(code, "response is null!")
                     return
@@ -171,7 +172,7 @@ object BuglyManager {
             }
 
             private fun doLast(appList: MutableList<AppInfo>) {
-                println("advancedSearch...")
+                Log.i("advancedSearch...")
                 val searchUrl = version?.let {
                     "https://bugly.qq.com/v2/search?startDateStr=${startDateStr}&start=${pageIndex * pageSize}&userSearchPage=%2Fv2%2Fcrash-reporting%2Fadvanced-search%2F2527295ba1&endDateStr=${endDateStr}&pid=1&platformId=1&date=custom&sortOrder=desc&useSearchTimes=11&version=${version}&rows=${pageSize}&sortField=matchCount&appId=${appId}&fsn=d054240e-9fbf-432c-a1fc-e7ac7770a13c"
                 } ?: "https://bugly.qq.com/v2/search?startDateStr=${startDateStr}&start=${pageIndex * pageSize}&userSearchPage=%2Fv2%2Fcrash-reporting%2Fadvanced-search%2F2527295ba1&endDateStr=${endDateStr}&pid=1&platformId=1&date=custom&sortOrder=desc&useSearchTimes=11&rows=${pageSize}&sortField=matchCount&appId=${appId}&fsn=d054240e-9fbf-432c-a1fc-e7ac7770a13c"
@@ -188,12 +189,16 @@ object BuglyManager {
                             callback.onFail(code, response)
                             return
                         }
-                        println("advancedSearch: code = $code")
                         response?.let { responseJson ->
                             val advancedSearchResponse = Gson().fromJson(responseJson, AdvancedSearchResponse::class.java)
+                            if (advancedSearchResponse.status != 200) {
+                                callback.onFail(advancedSearchResponse.status, advancedSearchResponse.msg)
+                                Log.i(" advancedSearch【$version】: $response")
+                                return
+                            }
                             val count = AtomicInteger()
                             val size = advancedSearchResponse.ret.issueList.size
-                            println("advancedSearch: size = $size")
+                            Log.i(" ${Thread.currentThread().threadGroup} >>> advancedSearch【$version】: size = $size")
                             val progress = Progress(size, count.get())
                             advancedSearchResponse.ret.issueList.forEach { issue ->
                                 issue.searchVer = version
@@ -213,7 +218,7 @@ object BuglyManager {
 
                                         override fun onSuccess(t: StackDetail) {
                                             if (t.data?.crashMap?.isEmpty() != false) {
-                                                println("----------------> t = $t")
+                                                Log.i("----------------> t = $t")
                                             }
                                             issue.crashInfo?.apply {
 //                                        if (crashDocMap.isNullOrEmpty()) {process
@@ -245,7 +250,7 @@ object BuglyManager {
 
                                         override fun onSuccess(t: StackDetail) {
                                             issue.crashInfo?.apply {
-                                                println("issueId =${issue.issueId}, ${t.data?.launchTime}")
+                                                Log.i("issueId =${issue.issueId}, ${t.data?.launchTime}")
                                                 crashDocMap?.put("launchTime", t.data?.launchTime)
                                             }
                                             if (addAndGet(count, size)) {
@@ -275,21 +280,21 @@ object BuglyManager {
                        startDateStr: String, endDateStr: String, pageIndex: Int, pageSize: Int, unitySoPath: String,
                        il2cppSoPath: String, outDir: String, ndk: String) {
         val start = System.currentTimeMillis()
-        println("generatorExcel... ")
+        Log.i("generatorExcel... ")
         advancedSearch(appId, token, cookieOldApi, cookieNewApi, version, startDateStr, endDateStr, pageIndex, pageSize,
             object : Callback<AdvancedSearchResponse> {
                 override fun onFail(code: Int, msg: String?) {
-                    println("generatorExcel fail! code = $code, msg = $msg")
+                    Log.i("generatorExcel fail! code = $code, msg = $msg")
                 }
 
                 override fun onSuccess(response: AdvancedSearchResponse) {
                     val count = AtomicInteger()
                     val size = response.ret.issueList.size
-                    // println("advancedSearch complete: count = $size")
-                    println("decodeCallStack...")
+                    // i("advancedSearch complete: count = $size")
+                    Log.i("decodeCallStack...")
                     response.ret.issueList.forEach {
                         val callStack = it.crashInfo?.crashDocMap?.get("callStack")?.toString() ?: ""
-                        CallStackDecoder.decodeCallStack(callStack, ndk, unitySoPath, il2cppSoPath, object : Callback<String> {
+                        CallStackDecoder.decodeCallStack(callStack, ndk, unitySoPath, il2cppSoPath, version, object : Callback<String> {
                             override fun onFail(code: Int, msg: String?) {
                                 if (addAndGet(count, size)) {
                                     onComplete()
@@ -304,12 +309,12 @@ object BuglyManager {
                             }
 
                             private fun onComplete() {
-                                println("decodeCallStack complete...")
+                                Log.i("decodeCallStack complete...")
                                 val excelName = version?.let {
                                     "Bugly_advanced_search_${version}_${startDateStr}_$endDateStr"
                                 } ?: "Bugly_advanced_search_${startDateStr}_$endDateStr"
                                 ExcelManager.createCrashTable(outDir, excelName, response)
-                                println("total duration = ${System.currentTimeMillis() - start}")
+                                Log.i("total duration = ${System.currentTimeMillis() - start}")
                             }
 
                         })
@@ -322,16 +327,16 @@ object BuglyManager {
     fun generatorExcel(appId: String, pageIndex: Int, pageSize: Int, token: String, cookie: String,
                        unitySoPath: String, il2cppSoPath: String, outDir: String, ndk: String) {
         val start = System.currentTimeMillis()
-        println("generatorExcel...")
+        Log.i("generatorExcel...")
         queryCrashAnalysis(appId, pageIndex, pageSize, token, cookie, object : Callback<MutableList<IssueAnalysis>> {
             override fun onFail(code: Int, msg: String?) {
-                println("queryCrashAnalysis fail!")
+                Log.i("queryCrashAnalysis fail!")
             }
 
             override fun onSuccess(t: MutableList<IssueAnalysis>) {
                 val count = AtomicInteger()
                 val size = t.size
-                println("queryStackDetail...")
+                Log.i("queryStackDetail...")
                 t.forEach { issueAnalysis ->
                     val detailUrl = URL_STACK_DETAIL
                         .replace(APP_ID_PLACEHOLDER, appId)
@@ -362,12 +367,12 @@ object BuglyManager {
                         }
 
                         private fun onComplete() {
-                            println("queryStackDetail complete...")
-                            println("decodeCallStack...")
+                            Log.i("queryStackDetail complete...")
+                            Log.i("decodeCallStack...")
                             val count = AtomicInteger()
                             val size = t.size
                             t.forEach {
-                                CallStackDecoder.decodeCallStack(it.callStack, ndk, unitySoPath, il2cppSoPath, object : Callback<String> {
+                                CallStackDecoder.decodeCallStack(it.callStack, ndk, unitySoPath, il2cppSoPath, callback =  object : Callback<String> {
                                     override fun onFail(code: Int, msg: String?) {
                                         if (addAndGet(count, size)) {
                                             onComplete()
@@ -382,9 +387,9 @@ object BuglyManager {
                                     }
 
                                     private fun onComplete() {
-                                        println("decodeCallStack complate...")
+                                        Log.i("decodeCallStack complate...")
                                         ExcelManager.createCrashTable(outDir, "CrashAnalysis", t)
-                                        println("total duration = ${System.currentTimeMillis() - start}")
+                                        Log.i("total duration = ${System.currentTimeMillis() - start}")
                                     }
 
                                 })

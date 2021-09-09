@@ -2,7 +2,6 @@ package com.doudou.bugly
 
 import com.doudou.bugly.manager.BuglyManager
 
-
 enum class ArgsKey(val value: String) {
     KEY_APP_ID("-appId"),
     KEY_TOKEN("-token"),
@@ -19,10 +18,12 @@ enum class ArgsKey(val value: String) {
     KEY_NDK_HOME("-ndk")
 }
 
+const val APP_VER_SPLIT = "&"
+
 @JvmName("main")
 fun main(vararg args: String) {
     try {
-        println("launch bugly helper.")
+        Log.i("launch bugly helper.")
         val argsMap = mutableMapOf<String, String>()
         val argCount = args.size
         for (i in args.indices step 2) {
@@ -44,7 +45,7 @@ fun main(vararg args: String) {
             val key = argsKey.value
             if (ArgsKey.KEY_NDK_HOME.value.equals(key, true)) {
                 if (ndk.isNullOrBlank()) {
-                    println("args $key illegal!")
+                    Log.i("args $key illegal!")
                     pause()
                     return
                 }
@@ -55,23 +56,40 @@ fun main(vararg args: String) {
                 return
             }
         }
-        BuglyManager.generatorExcel(get(argsMap, ArgsKey.KEY_APP_ID.value),
-            get(argsMap, ArgsKey.KEY_TOKEN.value),
-            get(argsMap, ArgsKey.KEY_COOKIE_OLD_API.value),
-            get(argsMap, ArgsKey.KEY_COOKIE_NEW_API.value),
-            get(argsMap, ArgsKey.KEY_APP_VERSION.value),
-            get(argsMap, ArgsKey.KEY_START_DATE_STR.value),
-            get(argsMap, ArgsKey.KEY_END_DATE_STR.value),
-            get(argsMap, ArgsKey.KEY_PAGE_INDEX.value).toInt(),
-            get(argsMap, ArgsKey.KEY_PAGE_SIZE.value).toInt(),
-            get(argsMap, ArgsKey.KEY_UNITY_SO_PATH.value),
-            get(argsMap, ArgsKey.KEY_IL_2_CPP_SO_PATH.value),
-            get(argsMap, ArgsKey.KEY_OUT_DIR.value),
-            "$ndk")
-    } catch (e: Throwable) {
-        e.printStackTrace()
+
+        val appVer = get(argsMap, ArgsKey.KEY_APP_VERSION.value)
+        if (appVer.isNullOrBlank() || !appVer.contains(APP_VER_SPLIT)) {
+            generatorExcel(appVer, argsMap, ndk)
+            return
+        }
+        appVer.split(APP_VER_SPLIT).forEach {
+            generatorExcel(it, argsMap, ndk)
+        }
+    } catch (tr: Throwable) {
+        Log.e(tr)
         Thread.sleep(10_000)
     }
+}
+
+private fun generatorExcel(appVer: String?, argsMap: MutableMap<String, String>, ndk: String?) {
+    object : Thread(appVer ?: "all-app-version"){
+        override fun run() {
+            super.run()
+            BuglyManager.generatorExcel(get(argsMap, ArgsKey.KEY_APP_ID.value),
+                get(argsMap, ArgsKey.KEY_TOKEN.value),
+                get(argsMap, ArgsKey.KEY_COOKIE_OLD_API.value),
+                get(argsMap, ArgsKey.KEY_COOKIE_NEW_API.value),
+                appVer,
+                get(argsMap, ArgsKey.KEY_START_DATE_STR.value),
+                get(argsMap, ArgsKey.KEY_END_DATE_STR.value),
+                get(argsMap, ArgsKey.KEY_PAGE_INDEX.value).toInt(),
+                get(argsMap, ArgsKey.KEY_PAGE_SIZE.value).toInt(),
+                get(argsMap, ArgsKey.KEY_UNITY_SO_PATH.value),
+                get(argsMap, ArgsKey.KEY_IL_2_CPP_SO_PATH.value),
+                get(argsMap, ArgsKey.KEY_OUT_DIR.value),
+                "$ndk")
+        }
+    }.start()
 }
 
 private fun pause(time: Long = 10_000) = Thread.sleep(time)

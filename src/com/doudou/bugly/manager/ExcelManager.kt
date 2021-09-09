@@ -1,5 +1,6 @@
 package com.doudou.bugly.manager
 
+import com.doudou.bugly.Log
 import com.doudou.bugly.bean.AdvancedSearchResponse
 import com.doudou.bugly.bean.IssueAnalysis
 import com.doudou.bugly.config.CrashExcelConfig
@@ -14,7 +15,7 @@ import java.util.*
 object ExcelManager {
 
     fun createCrashTable(outDir: String, name: String, response: AdvancedSearchResponse) {
-        println("createCrashTable: $name")
+        Log.i("createCrashTable: $name")
         with(XSSFWorkbook()) {
             val crashSheet = createSheet("Crash").also {
                 it.setColumnWidth(CrashExcelConfig.columns[CrashExcelConfig.TITLE_STACK_FEATURE]!!, 256 * 80)
@@ -103,7 +104,7 @@ object ExcelManager {
                 outDir + File.separator + excelName
             }
             val p = saveFile(this, path)
-            println("createCrashTable complete: ${if (p != null) "success!" else "fail!"}")
+            Log.i("createCrashTable complete: ${if (p != null) "success!" else "fail!"}")
         }
     }
 
@@ -121,7 +122,7 @@ object ExcelManager {
     }
 
     fun createCrashTable(outDir: String, name: String, issueAnalysisList: MutableList<IssueAnalysis>) {
-        println("createCrashTable: $name")
+        Log.i("createCrashTable: $name")
         with(XSSFWorkbook()) {
             val crashSheet = createSheet("Crash").also {
                 it.setColumnWidth(CrashExcelConfig.columns[CrashExcelConfig.TITLE_STACK_FEATURE]!!, 256 * 80)
@@ -192,26 +193,26 @@ object ExcelManager {
                 outDir + File.separator + excelName
             }
             val p = saveFile(this, path)
-            println("createCrashTable complete: $p")
+            Log.i("createCrashTable complete: $p")
         }
     }
 
     private fun saveFile(workbook: Workbook, path: String) : String? {
         val file = File(path)
         try {
-            println("saveFile: $path")
+            Log.i("saveFile: $path")
             if (file.exists()) {
                 file.delete()
             }
             FileOutputStream(file).use {
                 workbook.write(it)
             }
-            println("save file success!")
+            Log.i("save file success!")
             return path
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        println("save file fail!")
+        Log.i("save file fail!")
         return null
     }
 

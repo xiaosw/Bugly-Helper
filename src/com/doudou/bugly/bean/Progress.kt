@@ -1,5 +1,6 @@
 package com.doudou.bugly.bean
 
+import com.doudou.bugly.Log
 import java.text.DecimalFormat
 
 data class Progress(val max: Int, var current: Int, val periodInMillis: Long = 1_000) {
@@ -15,7 +16,7 @@ data class Progress(val max: Int, var current: Int, val periodInMillis: Long = 1
         if (currentTimeInMillis - startTimeInMillis >= periodInMillis
             || current === max) {
             startTimeInMillis = currentTimeInMillis
-            println("process: ${progressFormat.format(current * 100F / max)}%")
+            Log.i("process: ${progressFormat.format(current * 100F / max)}%")
         }
     }
 }
