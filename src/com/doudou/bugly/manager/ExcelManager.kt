@@ -60,7 +60,7 @@ object ExcelManager {
                             ver = buildVersion()
                         }
                         createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_VERSION]!!).setCellValue(ver)
-                        createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_PRODUCT_NAME]!!).setCellValue("迷你军团")
+                        createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_PRODUCT_NAME]!!).setCellValue(appName)
                         createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_EXCEPTION_COUNT]!!).setCellValue(get(issueDocMap, "count").toFloat().toInt().toString())
                         createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_IMEI_COUNT]!!).setCellValue(get(issueDocMap, "deviceCount").toFloat().toInt().toString())
                         createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_STACK_FEATURE]!!).setCellValue(get(issueDocMap, "keyStack"))

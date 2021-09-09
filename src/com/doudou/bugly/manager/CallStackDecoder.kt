@@ -45,7 +45,7 @@ object CallStackDecoder {
                             }
                         }?.let { soPath ->
                             val cmd = "$cmdPrefix $soPath ${addrs.addrs()}"
-                            println("cmd = $cmd")
+                            // println("cmd = $cmd")
                             Runtime.getRuntime().exec(cmd)?.let { process ->
                                 BufferedReader(InputStreamReader(process.inputStream)).use { br ->
                                     var line: String?

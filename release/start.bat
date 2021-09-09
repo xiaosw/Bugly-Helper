@@ -17,5 +17,5 @@ java -jar Bugly-Helper.jar ^
 -pageSize 100 ^
 -unity C:\\Users\\admin\\Downloads\\libunity.sym.so ^
 -il2cpp C:\\Users\\admin\\Downloads\\arm64-v8a\\libil2cpp.so ^
--out  C:\\Users\\admin\\Downloads\\Bugly-Helper ^
+-out E:\Workspace\Demo\Bugly-Helper\release\\build ^
 -ndk D:\Dev\NDK\android-ndk-r19c-windows-x86_64\android-ndk-r19c

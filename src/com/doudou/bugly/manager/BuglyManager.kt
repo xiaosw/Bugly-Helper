@@ -27,8 +27,26 @@ object BuglyManager {
     private const val URL_STACK_DETAIL = "https://bugly.qq.com/v4/api/old/get-last-crash?appId=${APP_ID_PLACEHOLDER}&pid=1&issueId=${ISSUE_PLACEHOLDER}&crashDataType=undefined"
     private const val URL_STACK_DETAIL_BY_HASH = "https://bugly.qq.com/v4/api/old/get-crash-detail?appId=${APP_ID_PLACEHOLDER}&pid=1&crashHash=${CRASH_HASH_PLACEHOLDER}&fsn=3035d1bd-c0e0-49ef-8a5e-042bd711fc01"
 
-    private val sThreadLocal by lazy {
-        ThreadLocal<Long>()
+    /**
+     * 应用列表
+     */
+    private const val URL_APP_LIST = "https://bugly.qq.com/v4/api/old/app-list"
+
+    fun queryAppList(token: String, oldCookie: String, callback: Callback<AppListResponse>) {
+        println("query app list...")
+        OkHttpUtil.get(token, oldCookie, URL_APP_LIST, object : OkHttpUtil.CommonCallback {
+            override fun onComplete(code: Int, response: String?) {
+                println("query app list code = $code")
+                response?.let { responseJson ->
+                    val appList = Gson().fromJson(responseJson, AppListResponse::class.java)
+                    println("query app list complete...${appList.data?.size}")
+                    callback.onSuccess(appList)
+                    return
+                }
+                callback?.onFail(-1, "response is null!")
+            }
+
+        })
     }
 
     fun queryCrashAnalysis(appId: String, pageIndex: Int, pageSize: Int, token: String, cookie: String,
@@ -143,91 +161,111 @@ object BuglyManager {
         appId: String, token: String, cookieOldApi: String, cookieNewApi: String, version: String?, startDateStr: String,
         endDateStr: String, pageIndex: Int, pageSize: Int, callback: Callback<AdvancedSearchResponse>
     ) {
+        queryAppList(token, cookieOldApi, object : Callback<AppListResponse> {
+            override fun onFail(code: Int, msg: String?) {
+                doLast(mutableListOf())
+            }
 
-        println("advancedSearch...")
-        val searchUrl = version?.let {
-            "https://bugly.qq.com/v2/search?startDateStr=${startDateStr}&start=${pageIndex * pageSize}&userSearchPage=%2Fv2%2Fcrash-reporting%2Fadvanced-search%2F2527295ba1&endDateStr=${endDateStr}&pid=1&platformId=1&date=custom&sortOrder=desc&useSearchTimes=11&version=${version}&rows=${pageSize}&sortField=matchCount&appId=${appId}&fsn=d054240e-9fbf-432c-a1fc-e7ac7770a13c"
-        } ?: "https://bugly.qq.com/v2/search?startDateStr=${startDateStr}&start=${pageIndex * pageSize}&userSearchPage=%2Fv2%2Fcrash-reporting%2Fadvanced-search%2F2527295ba1&endDateStr=${endDateStr}&pid=1&platformId=1&date=custom&sortOrder=desc&useSearchTimes=11&rows=${pageSize}&sortField=matchCount&appId=${appId}&fsn=d054240e-9fbf-432c-a1fc-e7ac7770a13c"
-        OkHttpUtil.get(token, cookieNewApi, searchUrl, object : OkHttpUtil.CommonCallback {
-            override fun onComplete(code: Int, response: String?) {
-                if (code != 200) {
-                    callback.onFail(code, response)
-                    return
+            override fun onSuccess(t: AppListResponse) {
+                doLast(t.data ?: mutableListOf())
+            }
+
+            private fun doLast(appList: MutableList<AppInfo>) {
+                println("advancedSearch...")
+                val searchUrl = version?.let {
+                    "https://bugly.qq.com/v2/search?startDateStr=${startDateStr}&start=${pageIndex * pageSize}&userSearchPage=%2Fv2%2Fcrash-reporting%2Fadvanced-search%2F2527295ba1&endDateStr=${endDateStr}&pid=1&platformId=1&date=custom&sortOrder=desc&useSearchTimes=11&version=${version}&rows=${pageSize}&sortField=matchCount&appId=${appId}&fsn=d054240e-9fbf-432c-a1fc-e7ac7770a13c"
+                } ?: "https://bugly.qq.com/v2/search?startDateStr=${startDateStr}&start=${pageIndex * pageSize}&userSearchPage=%2Fv2%2Fcrash-reporting%2Fadvanced-search%2F2527295ba1&endDateStr=${endDateStr}&pid=1&platformId=1&date=custom&sortOrder=desc&useSearchTimes=11&rows=${pageSize}&sortField=matchCount&appId=${appId}&fsn=d054240e-9fbf-432c-a1fc-e7ac7770a13c"
+                var appName = "Unknown"
+                appList.forEach {
+                    if (it.appId == appId) {
+                        appName = it.appName
+                        return@forEach
+                    }
                 }
-                println("advancedSearch: response = $response")
-                response?.let { responseJson ->
-                    val advancedSearchResponse = Gson().fromJson(responseJson, AdvancedSearchResponse::class.java)
-                    val count = AtomicInteger()
-                    val size = advancedSearchResponse.ret.issueList.size
-                    println("advancedSearch: size = $size")
-                    val progress = Progress(size, count.get())
-                    advancedSearchResponse.ret.issueList.forEach { issue ->
-                        issue.searchVer = version
+                OkHttpUtil.get(token, cookieNewApi, searchUrl, object : OkHttpUtil.CommonCallback {
+                    override fun onComplete(code: Int, response: String?) {
+                        if (code != 200) {
+                            callback.onFail(code, response)
+                            return
+                        }
+                        println("advancedSearch: code = $code")
+                        response?.let { responseJson ->
+                            val advancedSearchResponse = Gson().fromJson(responseJson, AdvancedSearchResponse::class.java)
+                            val count = AtomicInteger()
+                            val size = advancedSearchResponse.ret.issueList.size
+                            println("advancedSearch: size = $size")
+                            val progress = Progress(size, count.get())
+                            advancedSearchResponse.ret.issueList.forEach { issue ->
+                                issue.searchVer = version
+                                issue.appName = appName
 //                        if (issue.crashInfo?.crashDocMap.isNullOrEmpty()) {
-                        if (true) {
-                            val detailUrl = URL_STACK_DETAIL
-                                .replace(APP_ID_PLACEHOLDER, appId)
-                                .replace(ISSUE_PLACEHOLDER, issue.issueId)
-                            queryStackDetail(token, cookieOldApi, detailUrl, appId, object : Callback<StackDetail> {
-                                override fun onFail(code: Int, msg: String?) {
-                                    if (addAndGet(count, size)) {
-                                        complete(advancedSearchResponse)
-                                    }
-                                    progress.update(count.get())
-                                }
+                                if (true) {
+                                    val detailUrl = URL_STACK_DETAIL
+                                        .replace(APP_ID_PLACEHOLDER, appId)
+                                        .replace(ISSUE_PLACEHOLDER, issue.issueId)
+                                    queryStackDetail(token, cookieOldApi, detailUrl, appId, object : Callback<StackDetail> {
+                                        override fun onFail(code: Int, msg: String?) {
+                                            if (addAndGet(count, size)) {
+                                                complete(advancedSearchResponse)
+                                            }
+                                            progress.update(count.get())
+                                        }
 
-                                override fun onSuccess(t: StackDetail) {
-                                    if (t.data?.crashMap?.isEmpty() != false) {
-                                        println("----------------> t = $t")
-                                    }
-                                    issue.crashInfo?.apply {
+                                        override fun onSuccess(t: StackDetail) {
+                                            if (t.data?.crashMap?.isEmpty() != false) {
+                                                println("----------------> t = $t")
+                                            }
+                                            issue.crashInfo?.apply {
 //                                        if (crashDocMap.isNullOrEmpty()) {process
 //                                            crashDocMap = t.data?.crashMap
 //                                        }
-                                        crashDocMap = t.data?.crashMap.apply {
-                                            this?.put("launchTime", t.data?.launchTime)
+                                                crashDocMap = t.data?.crashMap.apply {
+                                                    this?.put("launchTime", t.data?.launchTime)
+                                                }
+
+                                            }
+                                            if (addAndGet(count, size)) {
+                                                complete(advancedSearchResponse)
+                                            }
+                                            progress.update(count.get())
                                         }
 
-                                    }
-                                    if (addAndGet(count, size)) {
-                                        complete(advancedSearchResponse)
-                                    }
-                                    progress.update(count.get())
-                                }
+                                    })
+                                } else {
+                                    val detailUrlByHash = URL_STACK_DETAIL_BY_HASH
+                                        .replace(APP_ID_PLACEHOLDER, appId)
+                                        .replace(CRASH_HASH_PLACEHOLDER, issue.crashInfo?.crashHash ?: "")
+                                    queryStackDetailByHash(token, cookieOldApi, detailUrlByHash, object : Callback<StackDetail> {
+                                        override fun onFail(code: Int, msg: String?) {
+                                            if (addAndGet(count, size)) {
+                                                complete(advancedSearchResponse)
+                                            }
+                                            progress.update(count.get())
+                                        }
 
-                            })
-                        } else {
-                            val detailUrlByHash = URL_STACK_DETAIL_BY_HASH
-                                .replace(APP_ID_PLACEHOLDER, appId)
-                                .replace(CRASH_HASH_PLACEHOLDER, issue.crashInfo?.crashHash ?: "")
-                            queryStackDetailByHash(token, cookieOldApi, detailUrlByHash, object : Callback<StackDetail> {
-                                override fun onFail(code: Int, msg: String?) {
-                                    if (addAndGet(count, size)) {
-                                        complete(advancedSearchResponse)
-                                    }
-                                    progress.update(count.get())
+                                        override fun onSuccess(t: StackDetail) {
+                                            issue.crashInfo?.apply {
+                                                println("issueId =${issue.issueId}, ${t.data?.launchTime}")
+                                                crashDocMap?.put("launchTime", t.data?.launchTime)
+                                            }
+                                            if (addAndGet(count, size)) {
+                                                complete(advancedSearchResponse)
+                                            }
+                                            progress.update(count.get())
+                                        }
+                                    })
                                 }
-
-                                override fun onSuccess(t: StackDetail) {
-                                    issue.crashInfo?.apply {
-                                        println("issueId =${issue.issueId}, ${t.data?.launchTime}")
-                                        crashDocMap?.put("launchTime", t.data?.launchTime)
-                                    }
-                                    if (addAndGet(count, size)) {
-                                        complete(advancedSearchResponse)
-                                    }
-                                    progress.update(count.get())
-                                }
-                            })
-                        }
-                    }
+                            }
 //                    callback.onSuccess(advancedSearchResponse)
-                } ?: callback.onFail(code, "response is null!")
+                        } ?: callback.onFail(code, "response is null!")
 
-            }
+                    }
 
-            private fun complete(advancedSearchResponse: AdvancedSearchResponse) {
-                callback.onSuccess(advancedSearchResponse)
+                    private fun complete(advancedSearchResponse: AdvancedSearchResponse) {
+                        callback.onSuccess(advancedSearchResponse)
+                    }
+
+                })
             }
 
         })

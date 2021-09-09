@@ -10,6 +10,7 @@ data class AdvancedSearchResponse(
     val appId: String,
     val platformId: String?,
     val issueList: MutableList<AdvancedSearchResponse>,
+    var appName: String? = "unknown",
 
     // 三级
     val issueId: String,
