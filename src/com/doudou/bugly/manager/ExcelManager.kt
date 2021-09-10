@@ -30,6 +30,7 @@ object ExcelManager {
                 it.setColumnWidth(CrashExcelConfig.columns[CrashExcelConfig.TITLE_USER_ID]!!, 256 * 32)
                 it.setColumnWidth(CrashExcelConfig.columns[CrashExcelConfig.TITLE_OS_VERSION]!!, 256 * 26)
                 it.setColumnWidth(CrashExcelConfig.columns[CrashExcelConfig.TITLE_HARDWARE]!!, 256 * 20)
+                it.setColumnWidth(CrashExcelConfig.columns[CrashExcelConfig.TITLE_DEVICE_ID]!!, 256 * 20)
                 it.setColumnWidth(CrashExcelConfig.columns[CrashExcelConfig.TITLE_ROM]!!, 256 * 40)
             }
             val titleRow = crashSheet.createRow(0)
@@ -79,8 +80,9 @@ object ExcelManager {
                         createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_LAUNCHER_TIME]!!).setCellValue(useTimeFormat.format(zeroTime + launchTime * 1000))
                         createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_USER_ID]!!).setCellValue(get(crashInfo?.crashDocMap, "userId"))
                         createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_CURRENT_STATUS]!!).setCellValue(get(issueDocMap, "status").toFloat().toInt().toString())
-                        createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_HANDLE_PEOPLE]!!).setCellValue("")
+                        createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_HANDLE_PEOPLE]!!).setCellValue(get(issueDocMap, "processorName"))
                         createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_HARDWARE]!!).setCellValue(get(crashInfo?.crashDocMap, "model"))
+                        createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_DEVICE_ID]!!).setCellValue(get(crashInfo?.crashDocMap, "deviceId"))
                         createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_OS_VERSION]!!).setCellValue(get(crashInfo?.crashDocMap, "osVer"))
                         createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_ROM]!!).setCellValue(get(crashInfo?.crashDocMap, "rom"))
                         createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_CPU_NAME]!!).setCellValue(get(crashInfo?.crashDocMap, "cpuName"))

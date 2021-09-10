@@ -27,11 +27,30 @@ enum class ArgsKey(val value: String) {
 const val KEY_DECODER_ADDR = "-decode"
 
 const val APP_VER_SPLIT = "&"
+const val TEST = false
 
 @JvmName("main")
 fun main(vararg args: String) {
     try {
         Log.i("launch bugly helper.")
+        if (TEST) {
+            BuglyManager.generatorExcel("2527295ba1",
+                "1599244150",
+                "bugly-session=s%3A9rqhBQRF3jn5nuo2cmvgelowmf4k1HU4.j62OQv3AYC7GCdlZBaDpMyIwuhxgFNVvibkc9XqVmgo",
+                "bugly_session=eyJpdiI6Imt6VGJUSWFkbkJVYXpqMmlNTnpya0E9PSIsInZhbHVlIjoibmhpSW5ubjByM1FmWDZSdVRFZ2I3ZXA0Mk9pVkd4R2lmUmhRcUJSeDlGRkc1bEhhdUpGQlBhd0NMaTBZK2JwSSt5OEh2VjB0MGllRHk2NGFnXC9IY0hnPT0iLCJtYWMiOiI3ZDUzNzk3MzMwNDk3M2IyNWMxMjM4MmRjMWUxZjc3MmVhZWMxYzdjNTY1OWIyN2RhMmQyODRmYzI3ZjA0YWQ1In0%3D",
+                "1.2.5",
+                "2021-09-09",
+                "2021-09-09",
+                0,
+                100,
+                "C:\\\\Users\\\\admin\\\\Downloads\\\\libunity.sym.so",
+                "C:\\\\Users\\\\admin\\\\Downloads\\\\arm64-v8a\\\\libil2cpp.so",
+                "E:\\Workspace\\Demo\\Bugly-Helper\\release\\\\build",
+                "D:\\Dev\\NDK\\android-ndk-r19c-windows-x86_64\\android-ndk-r19c")
+            return
+        }
+
+
         val argsMap = mutableMapOf<String, String>()
         val argCount = args.size
         for (i in args.indices step 2) {

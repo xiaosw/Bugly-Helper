@@ -19,6 +19,7 @@ object CrashExcelConfig {
     const val TITLE_CURRENT_STATUS = "当前状态"
     const val TITLE_HANDLE_PEOPLE = "处理人"
     const val TITLE_HARDWARE = "设备机型"
+    const val TITLE_DEVICE_ID = "设备ID"
     const val TITLE_OS_VERSION = "系统版本"
     const val TITLE_ROM = "ROM"
     const val TITLE_CPU_NAME = "CUP名字"
@@ -42,6 +43,7 @@ object CrashExcelConfig {
         it.add(TITLE_CURRENT_STATUS)
         it.add(TITLE_HANDLE_PEOPLE)
         it.add(TITLE_HARDWARE)
+        it.add(TITLE_DEVICE_ID)
         it.add(TITLE_OS_VERSION)
         it.add(TITLE_ROM)
         it.add(TITLE_CPU_NAME)

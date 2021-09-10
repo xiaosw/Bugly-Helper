@@ -16,5 +16,7 @@ data class AppInfo(
     val memberCount: Int,
     val enableUserAuit: Int,
     val showAuit: Int,
-    val betaEnable: Int
+    val betaEnable: Int,
+    var versionList: MutableList<Version>?,
+    var processorList: MutableList<Processor>?,
 ) : BaseBean()

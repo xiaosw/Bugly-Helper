@@ -7,9 +7,9 @@
 :: token -> X-token
 java -jar Bugly-Helper.jar ^
 -appId 2527295ba1 ^
--token 1056935136 ^
+-token 1599244150 ^
 -cookieOld bugly-session=s%%3A9rqhBQRF3jn5nuo2cmvgelowmf4k1HU4.j62OQv3AYC7GCdlZBaDpMyIwuhxgFNVvibkc9XqVmgo ^
--cookieNew bugly_session=eyJpdiI6Imt6VGJUSWFkbkJVYXpqMmlNTnpya0E9PSIsInZhbHVlIjoibmhpSW5ubjByM1FmWDZSdVRFZ2I3ZXA0Mk9pVkd4R2lmUmhRcUJSeDlGRkc1bEhhdUpGQlBhd0NMaTBZK2JwSSt5OEh2VjB0MGllRHk2NGFnXC9IY0hnPT0iLCJtYWMiOiI3ZDUzNzk3MzMwNDk3M2IyNWMxMjM4MmRjMWUxZjc3MmVhZWMxYzdjNTY1OWIyN2RhMmQyODRmYzI3ZjA0YWQ1In0%%3D ^
+-cookieNew bugly_session=eyJpdiI6InMwMVdKbFE3YXhOTHgzNUxEK1ZcL0V3PT0iLCJ2YWx1ZSI6IlFDUmJ3d1JWUTJTd3NWeEE4d3IzRFVDbW1ab082KzFvMWJTb2tSN2JzT1wvc2xielVoam43Nmh3dmVudWZmXC93N2g0VGlEOVJUQm5rVEFBZWNXVUUzenc9PSIsIm1hYyI6IjQ4MzA5MWNmZjIyMGYxYzg1NjE1ZmFiZWZhYjVmZGIyOTBhODBmMjlkZTRjYWViMGE3MTlhYmFhMGNjYWQ0MzcifQ%%3D%%3D ^
 -appVer 1.2.5^&1.2.6^&1.2.7_ProductA64_release^&1.2.8_ProductA64_release ^
 -startDateStr 2021-09-09 ^
 -endDateStr 2021-09-09 ^

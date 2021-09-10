@@ -33,15 +33,99 @@ object BuglyManager {
      */
     private const val URL_APP_LIST = "https://bugly.qq.com/v4/api/old/app-list"
 
+    /**
+     * 应用信息
+     */
+    private const val URL_APP_INFO = "https://bugly.qq.com/v4/api/old/get-app-info?appId=${APP_ID_PLACEHOLDER}&pid=1&types=version,member,tag,channel&fsn=bbf5e2fe-1c6e-4c85-b1a7-f57ae8b1f05a"
+
     fun queryAppList(token: String, oldCookie: String, callback: Callback<AppListResponse>) {
         Log.i("query app list...")
         OkHttpUtil.get(token, oldCookie, URL_APP_LIST, object : OkHttpUtil.CommonCallback {
             override fun onComplete(code: Int, response: String?) {
                 Log.i("query app list code = $code")
                 response?.let { responseJson ->
-                    val appList = Gson().fromJson(responseJson, AppListResponse::class.java)
-                    Log.i("query app list complete...${appList.data?.size}")
-                    callback.onSuccess(appList)
+                    val appListResponse = Gson().fromJson(responseJson, AppListResponse::class.java)
+                    appListResponse?.data?.let { appList ->
+                        val count = AtomicInteger(0)
+                        val size = appList.size
+                        appList.forEach { appInfo ->
+                            queryAppSubInfo(appInfo.appId, token, oldCookie, object : Callback<AppInfoResponse> {
+                                override fun onFail(code: Int, msg: String?) {
+                                    checkComplete()
+                                }
+
+                                override fun onSuccess(t: AppInfoResponse) {
+                                    appInfo.processorList = t.data.processorList
+                                    appInfo.versionList = t.data.versionList
+                                    checkComplete()
+                                }
+
+                                fun checkComplete() {
+                                    if (addAndGet(count, size)) {
+                                        Log.i("query app list complete...$size")
+                                        callback.onSuccess(appListResponse)
+                                    }
+                                }
+                            })
+
+                        }
+                        return
+                    }
+                    Log.i("query app list complete...${appListResponse.data?.size}")
+                    callback.onSuccess(appListResponse)
+                    return
+                }
+                callback?.onFail(-1, "response is null!")
+            }
+
+        })
+    }
+
+    private fun queryAppSubInfo(appId: String, token: String, oldCookie: String, callback: Callback<AppInfoResponse>) {
+        Log.i("query app($appId) info...")
+        OkHttpUtil.get(token, oldCookie, URL_APP_INFO.replace(APP_ID_PLACEHOLDER, appId), object : OkHttpUtil.CommonCallback {
+            override fun onComplete(code: Int, response: String?) {
+                Log.i("query app($appId) info code = $code")
+                response?.let { responseJson ->
+                    val appInfo = Gson().fromJson(responseJson, AppInfoResponse::class.java)
+                    Log.i("query app($appId) info complete...processor = ${appInfo?.data?.processorList?.size}")
+                    callback.onSuccess(appInfo)
+                    return
+                }
+                callback?.onFail(-1, "response is null!")
+            }
+
+        })
+    }
+
+    fun queryAppInfo(appId: String, token: String, oldCookie: String, callback: Callback<AppInfo>) {
+        Log.i("query app($appId) info...")
+        OkHttpUtil.get(token, oldCookie, URL_APP_LIST, object : OkHttpUtil.CommonCallback {
+            override fun onComplete(code: Int, response: String?) {
+                Log.i("query app($appId) code = $code")
+                response?.let { responseJson ->
+                    val appListResponse = Gson().fromJson(responseJson, AppListResponse::class.java)
+                    appListResponse?.data?.let { appList ->
+                        appList.forEach { appInfo ->
+                            if (appId == appInfo.appId) {
+                                queryAppSubInfo(appInfo.appId, token, oldCookie, object : Callback<AppInfoResponse> {
+                                    override fun onFail(code: Int, msg: String?) {
+                                        Log.i("query app($appId) sub code = $code")
+                                        callback.onFail(code, msg)
+                                    }
+
+                                    override fun onSuccess(t: AppInfoResponse) {
+                                        appInfo.processorList = t.data.processorList
+                                        appInfo.versionList = t.data.versionList
+                                        callback.onSuccess(appInfo)
+                                    }
+                                })
+                                return
+                            }
+                        }
+                    }
+                    Log.i("query app list complete...${appListResponse.data?.size}")
+                    callback.onFail(-1, "not find")
                     return
                 }
                 callback?.onFail(-1, "response is null!")
@@ -162,27 +246,27 @@ object BuglyManager {
         appId: String, token: String, cookieOldApi: String, cookieNewApi: String, version: String?, startDateStr: String,
         endDateStr: String, pageIndex: Int, pageSize: Int, callback: Callback<AdvancedSearchResponse>
     ) {
-        queryAppList(token, cookieOldApi, object : Callback<AppListResponse> {
+        queryAppInfo(appId, token, cookieOldApi, object : Callback<AppInfo> {
             override fun onFail(code: Int, msg: String?) {
-                doLast(mutableListOf())
+                doLast(null)
             }
 
-            override fun onSuccess(t: AppListResponse) {
-                doLast(t.data ?: mutableListOf())
+            override fun onSuccess(appInfo: AppInfo) {
+                doLast(appInfo)
             }
 
-            private fun doLast(appList: MutableList<AppInfo>) {
+            private fun doLast(appInfo: AppInfo?) {
                 Log.i("advancedSearch...")
                 val searchUrl = version?.let {
                     "https://bugly.qq.com/v2/search?startDateStr=${startDateStr}&start=${pageIndex * pageSize}&userSearchPage=%2Fv2%2Fcrash-reporting%2Fadvanced-search%2F2527295ba1&endDateStr=${endDateStr}&pid=1&platformId=1&date=custom&sortOrder=desc&useSearchTimes=11&version=${version}&rows=${pageSize}&sortField=matchCount&appId=${appId}&fsn=d054240e-9fbf-432c-a1fc-e7ac7770a13c"
                 } ?: "https://bugly.qq.com/v2/search?startDateStr=${startDateStr}&start=${pageIndex * pageSize}&userSearchPage=%2Fv2%2Fcrash-reporting%2Fadvanced-search%2F2527295ba1&endDateStr=${endDateStr}&pid=1&platformId=1&date=custom&sortOrder=desc&useSearchTimes=11&rows=${pageSize}&sortField=matchCount&appId=${appId}&fsn=d054240e-9fbf-432c-a1fc-e7ac7770a13c"
-                var appName = "Unknown"
-                appList.forEach {
-                    if (it.appId == appId) {
-                        appName = it.appName
-                        return@forEach
+                val processors = mutableMapOf<String, String>()
+                var appName = appInfo?.let {
+                    it.processorList?.forEach { processor ->
+                        processors[processor.userId] = processor.name
                     }
-                }
+                    it.appName
+                } ?: "Unknown"
                 OkHttpUtil.get(token, cookieNewApi, searchUrl, object : OkHttpUtil.CommonCallback {
                     override fun onComplete(code: Int, response: String?) {
                         if (code != 200) {
@@ -198,7 +282,7 @@ object BuglyManager {
                             }
                             val count = AtomicInteger()
                             val size = advancedSearchResponse.ret.issueList.size
-                            Log.i(" ${Thread.currentThread().threadGroup} >>> advancedSearch【$version】: size = $size")
+                            Log.i("advancedSearch【$version】: size = $size")
                             val progress = Progress(size, count.get())
                             advancedSearchResponse.ret.issueList.forEach { issue ->
                                 issue.searchVer = version
@@ -210,29 +294,28 @@ object BuglyManager {
                                         .replace(ISSUE_PLACEHOLDER, issue.issueId)
                                     queryStackDetail(token, cookieOldApi, detailUrl, appId, object : Callback<StackDetail> {
                                         override fun onFail(code: Int, msg: String?) {
-                                            if (addAndGet(count, size)) {
+                                            val isComplete = addAndGet(count, size)
+                                            progress.update(count.get())
+                                            if (isComplete) {
                                                 complete(advancedSearchResponse)
                                             }
-                                            progress.update(count.get())
                                         }
 
                                         override fun onSuccess(t: StackDetail) {
                                             if (t.data?.crashMap?.isEmpty() != false) {
                                                 Log.i("----------------> t = $t")
                                             }
+                                            issue.issueDocMap?.put("processorName", processors[issue.issueDocMap["processor"]])
                                             issue.crashInfo?.apply {
-//                                        if (crashDocMap.isNullOrEmpty()) {process
-//                                            crashDocMap = t.data?.crashMap
-//                                        }
                                                 crashDocMap = t.data?.crashMap.apply {
                                                     this?.put("launchTime", t.data?.launchTime)
                                                 }
-
                                             }
-                                            if (addAndGet(count, size)) {
+                                            val isComplete = addAndGet(count, size)
+                                            progress.update(count.get())
+                                            if (isComplete) {
                                                 complete(advancedSearchResponse)
                                             }
-                                            progress.update(count.get())
                                         }
 
                                     })
