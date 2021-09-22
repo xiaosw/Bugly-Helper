@@ -6,7 +6,7 @@
 :: cookieNew -> https://bugly.qq.com/v2/search
 :: token -> X-token
 java -jar Bugly-Helper.jar ^
--decode E:\\Workspace\\Demo\\Bugly-Helper\\release\\CallStack.txt ^
--unity C:\\Users\\admin\\Downloads\\libunity.sym.so ^
--il2cpp C:\\Users\\admin\\Downloads\\arm64-v8a\\libil2cpp.so ^
+-decode E:\Workspace\Demo\Bugly-Helper\release\CallStack.txt ^
+-unity E:\Workspace\Demo\Bugly-Helper\release\libs\arm64-v8a\libunity.sym.so ^
+-il2cpp E:\Workspace\Demo\Bugly-Helper\release\libs\arm64-v8a\libil2cpp.so ^
 -ndk D:\Dev\NDK\android-ndk-r19c-windows-x86_64\android-ndk-r19c

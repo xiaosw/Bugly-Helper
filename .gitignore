@@ -2,3 +2,4 @@
 /.idea
 /out
 /release/build
+/release/libs/arm64-v8a/libil2cpp.so
