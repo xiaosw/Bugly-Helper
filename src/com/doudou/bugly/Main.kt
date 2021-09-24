@@ -25,6 +25,7 @@ enum class ArgsKey(val value: String) {
 }
 
 const val KEY_DECODER_ADDR = "-decode"
+const val KEY_CMD = "-cmd"
 
 const val APP_VER_SPLIT = "&"
 const val TEST = false
@@ -46,6 +47,7 @@ fun main(vararg args: String) {
                 "C:\\\\Users\\\\admin\\\\Downloads\\\\libunity.sym.so",
                 "C:\\\\Users\\\\admin\\\\Downloads\\\\arm64-v8a\\\\libil2cpp.so",
                 "E:\\Workspace\\Demo\\Bugly-Helper\\release\\\\build",
+                null,
                 "D:\\Dev\\NDK\\android-ndk-r19c-windows-x86_64\\android-ndk-r19c")
             return
         }
@@ -59,6 +61,7 @@ fun main(vararg args: String) {
             }
         }
 
+        val cmd = argsMap[getKey(KEY_CMD)]
         val tempNdk = argsMap[getKey(ArgsKey.KEY_NDK_HOME.value)]
         var ndk = if (tempNdk.isNullOrBlank()) {
             System.getenv()["NDK_HOME"] ?: System.getenv()["NDK_ANDROID"]
@@ -69,7 +72,7 @@ fun main(vararg args: String) {
         }
 
         if (argsMap.containsKey(KEY_DECODER_ADDR)) {
-            decodeAddrs(argsMap, ndk)
+            decodeAddrs(argsMap, cmd, ndk)
             return
         }
 
@@ -91,11 +94,11 @@ fun main(vararg args: String) {
 
         val appVer = get(argsMap, ArgsKey.KEY_APP_VERSION.value)
         if (appVer.isNullOrBlank() || !appVer.contains(APP_VER_SPLIT)) {
-            generatorExcel(appVer, argsMap, ndk)
+            generatorExcel(appVer, argsMap, cmd, ndk)
             return
         }
         appVer.split(APP_VER_SPLIT).forEach {
-            generatorExcel(it, argsMap, ndk)
+            generatorExcel(it, argsMap, cmd, ndk)
         }
     } catch (tr: Throwable) {
         Log.e(tr)
@@ -103,7 +106,7 @@ fun main(vararg args: String) {
     }
 }
 
-private fun decodeAddrs(argsMap: MutableMap<String, String>, ndk: String?) {
+private fun decodeAddrs(argsMap: MutableMap<String, String>, cmd: String?, ndk: String?) {
     argsMap[KEY_DECODER_ADDR]?.let { content ->
         if (ndk.isNullOrEmpty()) {
             Log.e("ndk is null")
@@ -139,7 +142,7 @@ private fun decodeAddrs(argsMap: MutableMap<String, String>, ndk: String?) {
                 content
             }
             decodeContent?.let {
-                CallStackDecoder.decodeCallStack(it, "$ndk", unity, il2cpp, "decode-addrs", object : Callback<String> {
+                CallStackDecoder.decodeCallStack(it, cmd,"$ndk", unity, il2cpp, "decode-addrs", object : Callback<String> {
                     override fun onFail(code: Int, msg: String?) {
                         Log.e("decode fail: $code, $msg")
                     }
@@ -160,7 +163,7 @@ private fun decodeAddrs(argsMap: MutableMap<String, String>, ndk: String?) {
     pause()
 }
 
-private fun generatorExcel(appVer: String?, argsMap: MutableMap<String, String>, ndk: String?) {
+private fun generatorExcel(appVer: String?, argsMap: MutableMap<String, String>, cmd: String?, ndk: String?) {
     object : Thread(appVer ?: "all-app-version"){
         override fun run() {
             super.run()
@@ -176,6 +179,7 @@ private fun generatorExcel(appVer: String?, argsMap: MutableMap<String, String>,
                 get(argsMap, ArgsKey.KEY_UNITY_SO_PATH.value),
                 get(argsMap, ArgsKey.KEY_IL_2_CPP_SO_PATH.value),
                 get(argsMap, ArgsKey.KEY_OUT_DIR.value),
+                cmd,
                 "$ndk")
         }
     }.start()

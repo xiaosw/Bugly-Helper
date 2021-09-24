@@ -361,7 +361,7 @@ object BuglyManager {
 
     fun generatorExcel(appId: String, token: String, cookieOldApi: String, cookieNewApi: String, version: String?,
                        startDateStr: String, endDateStr: String, pageIndex: Int, pageSize: Int, unitySoPath: String,
-                       il2cppSoPath: String, outDir: String, ndk: String) {
+                       il2cppSoPath: String, outDir: String, cmd: String?, ndk: String) {
         val start = System.currentTimeMillis()
         Log.i("generatorExcel... ")
         advancedSearch(appId, token, cookieOldApi, cookieNewApi, version, startDateStr, endDateStr, pageIndex, pageSize,
@@ -377,7 +377,7 @@ object BuglyManager {
                     Log.i("decodeCallStack...")
                     response.ret.issueList.forEach {
                         val callStack = it.crashInfo?.crashDocMap?.get("callStack")?.toString() ?: ""
-                        CallStackDecoder.decodeCallStack(callStack, ndk, unitySoPath, il2cppSoPath, version, object : Callback<String> {
+                        CallStackDecoder.decodeCallStack(callStack, cmd, ndk, unitySoPath, il2cppSoPath, version, object : Callback<String> {
                             override fun onFail(code: Int, msg: String?) {
                                 if (addAndGet(count, size)) {
                                     onComplete()
@@ -408,7 +408,7 @@ object BuglyManager {
     }
 
     fun generatorExcel(appId: String, pageIndex: Int, pageSize: Int, token: String, cookie: String,
-                       unitySoPath: String, il2cppSoPath: String, outDir: String, ndk: String) {
+                       unitySoPath: String, il2cppSoPath: String, outDir: String, cmd: String?, ndk: String) {
         val start = System.currentTimeMillis()
         Log.i("generatorExcel...")
         queryCrashAnalysis(appId, pageIndex, pageSize, token, cookie, object : Callback<MutableList<IssueAnalysis>> {
@@ -455,7 +455,7 @@ object BuglyManager {
                             val count = AtomicInteger()
                             val size = t.size
                             t.forEach {
-                                CallStackDecoder.decodeCallStack(it.callStack, ndk, unitySoPath, il2cppSoPath, callback =  object : Callback<String> {
+                                CallStackDecoder.decodeCallStack(it.callStack, cmd, ndk, unitySoPath, il2cppSoPath, callback =  object : Callback<String> {
                                     override fun onFail(code: Int, msg: String?) {
                                         if (addAndGet(count, size)) {
                                             onComplete()

@@ -3,8 +3,10 @@ package com.doudou.bugly.manager
 import com.doudou.bugly.Log
 import com.doudou.bugly.callback.Callback
 import java.io.BufferedReader
+import java.io.File
 import java.io.InputStreamReader
 import java.lang.Exception
+import java.lang.IllegalArgumentException
 import java.lang.StringBuilder
 
 object CallStackDecoder {
@@ -12,23 +14,37 @@ object CallStackDecoder {
     private const val ADDR_PREFIX_UNITY_SO = "libunity.0x"
     private const val ADDR_PREFIX_IL2CPP_SO = "libil2cpp.0x"
     private const val ADDR_SUFFIX = "(Native Method)"
-    private val CMD = "${System.getenv()["NDK_HOME"]}\\toolchains\\aarch64-linux-android-4.9\\prebuilt\\windows-x86_64\\bin\\aarch64-linux-android-addr2line.exe -C -f -e "
     private const val IGNORE_DECODE = "??:?"
 
-    fun decodeCallStack(callStack: String, ndk: String, unitySoPath: String, il2cppSoPath: String
+    fun decodeCallStack(callStack: String, cmd: String?, ndk: String, unitySoPath: String, il2cppSoPath: String
                         , appVer: String? = null, callback: Callback<String>) {
         val addrs = parseAddrs(callStack)
         if (addrs.isEmpty()) {
             callback?.onSuccess(callStack)
             return
         }
-        decodeCallStack(addrs, ndk, unitySoPath, il2cppSoPath, appVer, callback)
+        decodeCallStack(addrs, cmd, ndk, unitySoPath, il2cppSoPath, appVer, callback)
     }
 
-    fun decodeCallStack(addrsList: MutableList<Addrs>, ndk: String, unitySoPath: String, il2cppSoPath: String
+    fun decodeCallStack(addrsList: MutableList<Addrs>, cmd: String?, ndk: String, unitySoPath: String, il2cppSoPath: String
                         , appVer: String? = null, callback: Callback<String>) {
 
-        val cmdPrefix = "$ndk\\toolchains\\aarch64-linux-android-4.9\\prebuilt\\windows-x86_64\\bin\\aarch64-linux-android-addr2line.exe -C -f -e "
+        val osName = System.getProperty("os.name") ?: ""
+//        Log.i("osName ------------> $osName")
+        val separator = File.separator
+        val addr2lineDir = "$ndk${separator}toolchains${separator}aarch64-linux-android-4.9${separator}prebuilt${separator}"
+        val c = when {
+            osName.contains("windows", true) -> {
+                "${addr2lineDir}windows-x86_64${separator}bin${separator}aarch64-linux-android-addr2line.exe"
+            }
+            osName.contains("mac", true) -> {
+                "${addr2lineDir}darwin-x86_64${separator}bin${separator}aarch64-linux-android-addr2line"
+            }
+            else -> {
+                throw IllegalArgumentException("not support [$osName]!")
+            }
+        }
+        val cmdPrefix = cmd ?: "$c -C -f -e"
         object : Thread("${appVer ?: "all_version"}_decode_stack"){
             override fun run() {
                 super.run()
