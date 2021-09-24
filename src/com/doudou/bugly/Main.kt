@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.lang.Exception
+import java.util.concurrent.atomic.AtomicInteger
 
 enum class ArgsKey(val value: String) {
     KEY_APP_ID("-appId"),
@@ -21,11 +22,10 @@ enum class ArgsKey(val value: String) {
     KEY_UNITY_SO_PATH("-unity"),
     KEY_IL_2_CPP_SO_PATH("-il2cpp"),
     KEY_OUT_DIR("-out"),
-    KEY_NDK_HOME("-ndk")
+    KEY_CMD("-cmd")
 }
 
 const val KEY_DECODER_ADDR = "-decode"
-const val KEY_CMD = "-cmd"
 
 const val APP_VER_SPLIT = "&"
 const val TEST = false
@@ -47,8 +47,11 @@ fun main(vararg args: String) {
                 "C:\\\\Users\\\\admin\\\\Downloads\\\\libunity.sym.so",
                 "C:\\\\Users\\\\admin\\\\Downloads\\\\arm64-v8a\\\\libil2cpp.so",
                 "E:\\Workspace\\Demo\\Bugly-Helper\\release\\\\build",
-                null,
-                "D:\\Dev\\NDK\\android-ndk-r19c-windows-x86_64\\android-ndk-r19c")
+                "D:\\Dev\\NDK\\android-ndk-r19c-windows-x86_64\\android-ndk-r19c\\toolchains\\aarch64-linux-android-4.9\\prebuilt\\windows-x86_64\\bin\\aarch64-linux-android-addr2line.exe -C -f -e",
+                AtomicInteger(0),
+                1,
+                System.currentTimeMillis()
+            )
             return
         }
 
@@ -61,30 +64,20 @@ fun main(vararg args: String) {
             }
         }
 
-        val cmd = argsMap[getKey(KEY_CMD)]
-        val tempNdk = argsMap[getKey(ArgsKey.KEY_NDK_HOME.value)]
-        var ndk = if (tempNdk.isNullOrBlank()) {
-            System.getenv()["NDK_HOME"] ?: System.getenv()["NDK_ANDROID"]
-        } else if (!System.getenv()[tempNdk].isNullOrBlank()) {
-            System.getenv()[tempNdk]
-        } else {
-            tempNdk
+        val cmd = argsMap[getKey(ArgsKey.KEY_CMD.value)]
+        if (cmd.isNullOrBlank()) {
+            Log.i("args ${ArgsKey.KEY_CMD.value} illegal!")
+            pause()
+            return
         }
-
         if (argsMap.containsKey(KEY_DECODER_ADDR)) {
-            decodeAddrs(argsMap, cmd, ndk)
+            decodeAddrs(argsMap, cmd)
             return
         }
 
         ArgsKey.values().forEachIndexed { _, argsKey ->
             val key = argsKey.value
-            if (ArgsKey.KEY_NDK_HOME.value.equals(key, true)) {
-                if (ndk.isNullOrBlank()) {
-                    Log.i("args $key illegal!")
-                    pause()
-                    return
-                }
-            } else if (!ArgsKey.KEY_APP_VERSION.value.equals(key, true)
+            if (!ArgsKey.KEY_APP_VERSION.value.equals(key, true)
                 && argsMap[getKey(key)].isNullOrBlank()) {
                 println("args $key illegal!")
                 pause()
@@ -93,12 +86,16 @@ fun main(vararg args: String) {
         }
 
         val appVer = get(argsMap, ArgsKey.KEY_APP_VERSION.value)
+        val indexCount = AtomicInteger()
+        val startTime = System.currentTimeMillis()
         if (appVer.isNullOrBlank() || !appVer.contains(APP_VER_SPLIT)) {
-            generatorExcel(appVer, argsMap, cmd, ndk)
+            generatorExcel(appVer, argsMap, cmd, indexCount, 1, startTime)
             return
         }
-        appVer.split(APP_VER_SPLIT).forEach {
-            generatorExcel(it, argsMap, cmd, ndk)
+        appVer.split(APP_VER_SPLIT).also {
+            it.forEach { ver ->
+                generatorExcel(ver, argsMap, cmd, indexCount, it.size, startTime)
+            }
         }
     } catch (tr: Throwable) {
         Log.e(tr)
@@ -106,13 +103,8 @@ fun main(vararg args: String) {
     }
 }
 
-private fun decodeAddrs(argsMap: MutableMap<String, String>, cmd: String?, ndk: String?) {
+private fun decodeAddrs(argsMap: MutableMap<String, String>, cmd: String) {
     argsMap[KEY_DECODER_ADDR]?.let { content ->
-        if (ndk.isNullOrEmpty()) {
-            Log.e("ndk is null")
-            pause()
-            return
-        }
         val unity = argsMap[getKey(ArgsKey.KEY_UNITY_SO_PATH.value)] ?: ""
         if (unity.isNullOrEmpty()) {
             Log.e("unity so is null")
@@ -142,7 +134,7 @@ private fun decodeAddrs(argsMap: MutableMap<String, String>, cmd: String?, ndk: 
                 content
             }
             decodeContent?.let {
-                CallStackDecoder.decodeCallStack(it, cmd,"$ndk", unity, il2cpp, "decode-addrs", object : Callback<String> {
+                CallStackDecoder.decodeCallStack(it, cmd, unity, il2cpp, "decode-addrs", object : Callback<String> {
                     override fun onFail(code: Int, msg: String?) {
                         Log.e("decode fail: $code, $msg")
                     }
@@ -163,7 +155,8 @@ private fun decodeAddrs(argsMap: MutableMap<String, String>, cmd: String?, ndk: 
     pause()
 }
 
-private fun generatorExcel(appVer: String?, argsMap: MutableMap<String, String>, cmd: String?, ndk: String?) {
+private fun generatorExcel(appVer: String?, argsMap: MutableMap<String, String>, cmd: String, indexCount: AtomicInteger,
+                           totalCount: Int, startTime: Long) {
     object : Thread(appVer ?: "all-app-version"){
         override fun run() {
             super.run()
@@ -180,7 +173,9 @@ private fun generatorExcel(appVer: String?, argsMap: MutableMap<String, String>,
                 get(argsMap, ArgsKey.KEY_IL_2_CPP_SO_PATH.value),
                 get(argsMap, ArgsKey.KEY_OUT_DIR.value),
                 cmd,
-                "$ndk")
+                indexCount,
+                totalCount,
+                startTime)
         }
     }.start()
 }
