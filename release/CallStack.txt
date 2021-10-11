@@ -1,64 +1,52 @@
- 1
-libunity.0xc05058(Native Method)
-2
-libunity.0xc04bf8(Native Method)
-3
-libunity.0xc04b48(Native Method)
-4
-libunity.0x419b9c(Native Method)
-5
-libunity.0xd6460c(Native Method)
-6
-libunity.0xd63c94(Native Method)
-7
-libunity.0xd63c38(Native Method)
-8
-libunity.0xd67b48(Native Method)
-9
-libunity.0xd680ec(Native Method)
-10
-libunity.0xd67328(Native Method)
-11
-libunity.0xd68bc4(Native Method)
-12
-libunity.0xd8f7d4(Native Method)
-13
-libunity.0xd8d7e4(Native Method)
-14
-libunity.0xd8d60c(Native Method)
-15
-libunity.0xb12348(Native Method)
-16
-libunity.0xb12400(Native Method)
-17
-libunity.0xb1273c(Native Method)
-18
-libunity.0xb128fc(Native Method)
-19
-libunity.0xb179d0(Native Method)
-20
-libunity.0xb13bf0(Native Method)
-21
-libunity.0xb0e764(Native Method)
-22
-libunity.0xb10a88(Native Method)
-23
-libunity.0xb2ba1c(Native Method)
-24
-libunity.0xb2b8d8(Native Method)
-25
-libil2cpp.0x17767d8(Native Method)
-26
-libil2cpp.0x17764b4(Native Method)
-27
-libil2cpp.0x177631c(Native Method)
-28
-libil2cpp.0x1776204(Native Method)
-29
-libil2cpp.0x1776030(Native Method)
-30
-libil2cpp.0x16d9a88(Native Method)
-31
-libil2cpp.0xd1da18(Native Method)
-32
-libil2cpp.0xd1d1c8(Native Method)
+java.lang.Error:FATAL EXCEPTION [main]
+Unity version     : 2020.3.0f1c1
+Device model      : realme RMX1931
+Device fingerprint: google/android_x86/x86:7.1.2/N2G47H/G955FXXU1AQJ5:/release-keys
+Build Type        : Development
+Scripting Backend : IL2CPP
+ABI               : armeabi-v7a
+Strip Engine Code : true
+
+
+......
+Caused by:
+java.lang.Error:*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+Version '2020.3.0f1c1 (1e553bf703d9)', Build type 'Development', Scripting Backend 'il2cpp', CPU 'armeabi-v7a'
+Build fingerprint: 'google/android_x86/x86:7.1.2/N2G47H/G955FXXU1AQJ5:/release-keys'
+Revision: '0'
+ABI: 'arm'
+Timestamp: 2021-10-09 10:15:13+0800
+pid: 5351, tid: 5684, name: Loading.Preload  >>> com.qire.mnjt <<<
+uid: 10047
+signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0xfffff0
+    r0  00fffff0  r1  01000000  r2  0000000c  r3  00fffff0
+    r4  0587cf30  r5  8f53f8a0  r6  00000000  r7  01000000
+    r8  00000010  r9  000aaab8  r10 c621f008  r11 0587d030
+    ip  054d9a7d  sp  8f53f888  lr  0587a044  pc  043e0247
+
+backtrace:
+      #00 pc 003e0247  /data/app/com.qire.mnjt-1/lib/arm/libunity.so
+      #01 pc 003e03f5  /data/app/com.qire.mnjt-1/lib/arm/libunity.so
+      #02 pc 003d2ee5  /data/app/com.qire.mnjt-1/lib/arm/libunity.so
+      #03 pc 003d022d  /data/app/com.qire.mnjt-1/lib/arm/libunity.so
+      #04 pc 0
+[Message over limit size:1000, has been cutted!]
+libunity.0x3e0247(Native Method)
+libunity.0x3e03f5(Native Method)
+libunity.0x3d2ee5(Native Method)
+libunity.0x3d022d(Native Method)
+libunity.0x719c89(Native Method)
+libunity.0x164435(Native Method)
+libunity.0x4e4fd1(Native Method)
+libunity.0x53eae9(Native Method)
+libunity.0x53fc53(Native Method)
+libunity.0x53eee9(Native Method)
+libunity.0x813b13(Native Method)
+libunity.0x8088a5(Native Method)
+libunity.0x808dbf(Native Method)
+libunity.0x5ffee7(Native Method)
+libunity.0x60149f(Native Method)
+libunity.0x60136b(Native Method)
+libunity.0x6012f7(Native Method)
+libunity.0x764f3b(Native Method)
+libtcb.0x7341e(Native Method)

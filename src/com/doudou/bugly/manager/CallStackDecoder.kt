@@ -3,10 +3,8 @@ package com.doudou.bugly.manager
 import com.doudou.bugly.Log
 import com.doudou.bugly.callback.Callback
 import java.io.BufferedReader
-import java.io.File
 import java.io.InputStreamReader
 import java.lang.Exception
-import java.lang.IllegalArgumentException
 import java.lang.StringBuilder
 
 object CallStackDecoder {
@@ -110,7 +108,13 @@ object CallStackDecoder {
     private fun move2Start(detail: String) : String {
         val indexOf = detail.indexOf("lib")
         if (checkIndex(indexOf)) {
-            return detail.substring(indexOf)
+            val result = detail.substring(indexOf)
+            if (result.startsWith(ADDR_PREFIX_UNITY_SO, true)
+                || result.startsWith(ADDR_PREFIX_IL2CPP_SO, true)
+                || result.length <= 3) {
+                return result
+            }
+            return move2Start(result.substring(3))
         }
         return ""
     }
