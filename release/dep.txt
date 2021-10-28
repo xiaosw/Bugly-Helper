@@ -1,0 +1,4 @@
+KotlinJavaRuntime
+org.apache.poi:poi-ooxml:4.1.2
+com.google.code.gson:gson:2.8.0
+com.squareup.okhttp3:okhttp:4.9.1

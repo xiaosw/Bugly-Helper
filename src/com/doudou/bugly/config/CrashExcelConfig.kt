@@ -10,6 +10,7 @@ object CrashExcelConfig {
     const val TITLE_EXCEPTION_COUNT = "异常次数"
     const val TITLE_IMEI_COUNT = "影响设备数"
     const val TITLE_STACK_FEATURE = "堆栈特征"
+    const val TITLE_EXP_MESSAGE = "ExpMessage"
     const val TITLE_STACK_DETAIL = "堆栈详情"
     const val TITLE_STACK_DETAIL_DECODE = "翻译堆栈"
     const val TITLE_CRASH_URL = "Crash详情链接"
@@ -34,6 +35,7 @@ object CrashExcelConfig {
         it.add(TITLE_EXCEPTION_COUNT)
         it.add(TITLE_IMEI_COUNT)
         it.add(TITLE_STACK_FEATURE)
+        it.add(TITLE_EXP_MESSAGE)
         it.add(TITLE_STACK_DETAIL)
         it.add(TITLE_STACK_DETAIL_DECODE)
         it.add(TITLE_CRASH_URL)

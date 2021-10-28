@@ -5,13 +5,13 @@
 :: cookieNew -> https://bugly.qq.com/v2/search
 :: token -> X-token
 java -jar Bugly-Helper.jar ^
--appId 7b322036ce ^
--token 1670831229 ^
--cookieOld bugly-session=s%%3ANjRD9UhjjIS8ODPERwxiH0-odl9Ztfa2.TD0lQnDkeehSwLgVoqjrCLg%%2FwJ5C3aOl48fRG7VCp88 ^
--cookieNew bugly_session=eyJpdiI6ImlUWU15Zm0zbThoRXBIOGM2YlNVamc9PSIsInZhbHVlIjoiSWtxOHRjVGo5MEpxUk9Ia1QzXC96czRQdWNZWEtzVkw3Q3huUHlVdEpPaG9VZFpFNjliZVE2VGVjbDVLNnBWMnppR0tDajFyc2t3R3ZDbnUyU1JWZktRPT0iLCJtYWMiOiIyNTlhYzQwYTMxZjliOGE1MjA3ZGYwNjQ0NDFkN2U1OTE0MzAxOTRmMjNmNzM4ZTYxMDViMjc0NDhmY2I4NmU1In0%%3D ^
--appVer 1.2.9^&1.3.1 ^
--startDateStr 2021-10-06 ^
--endDateStr 2021-10-11 ^
+-appId 2527295ba1 ^
+-token 805749931 ^
+-cookieOld bugly-session=s%%3ArsW5lAd3gKgVD1FwDnhWeo2FvhPh5bDv.XdU%%2BGLfaRH9PalZJ5mdQjDIiceDeqPy07YbCGiDeW04 ^
+-cookieNew bugly_session=eyJpdiI6IjExbE1GVTc5b0VHR041U2N1WWZzMVE9PSIsInZhbHVlIjoiYXVzbXlkWmJqY21uMjJoeFVGc3g5S09qeEoxZUU5S3N2SSs1TFRhbktSOXo3RTUyc1ZiVVBQWjRJSEVaOTFQN0l6MW9DUUpma05OS1h2NWhKVFZUaGc9PSIsIm1hYyI6IjY2ZDU2YjBkODJhZTY4ZDUwYWEwZmQ2OGU4Y2QzYWRkMmY2YjZhM2RlN2Y3Nzc5NGUwNDZmZWMwNmUzYjI3NDQifQ%%3D%%3D ^
+-appVer 1.4.1 ^
+-startDateStr 2021-10-28 ^
+-endDateStr 2021-10-28 ^
 -pageIndex 0 ^
 -pageSize 100 ^
 -unity E:\Workspace\Demo\Bugly-Helper\release\libs\arm64-v8a\libunity.sym.so ^

@@ -19,6 +19,7 @@ object ExcelManager {
         with(XSSFWorkbook()) {
             val crashSheet = createSheet("Crash").also {
                 it.setColumnWidth(CrashExcelConfig.columns[CrashExcelConfig.TITLE_STACK_FEATURE]!!, 256 * 80)
+                it.setColumnWidth(CrashExcelConfig.columns[CrashExcelConfig.TITLE_EXP_MESSAGE]!!, 256 * 80)
                 it.setColumnWidth(CrashExcelConfig.columns[CrashExcelConfig.TITLE_PRODUCT_VERSION]!!, 256 * 16)
                 it.setColumnWidth(CrashExcelConfig.columns[CrashExcelConfig.TITLE_VERSION]!!, 256 * 26)
                 it.setColumnWidth(CrashExcelConfig.columns[CrashExcelConfig.TITLE_STACK_DETAIL]!!, 256 * 50)
@@ -57,6 +58,15 @@ object ExcelManager {
 //                        createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_PRODUCT_VERSION]!!).setCellValue(get(issueDocMap, "productVersion"))
                         createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_PRODUCT_VERSION]!!).setCellValue(searchVer)
 
+                        val expMessage = get(crashInfo?.crashDocMap, "expMessage")?.let {
+                            val signalIndexOf = it.indexOf("signal ")
+                            if (signalIndexOf != -1) {
+                                var temp = it.substring(signalIndexOf)
+                                val end = it.indexOf("\n")
+                                return@let if (end === -1) temp else temp.substring(0, end)
+                            }
+                            it
+                        }
                         var ver = get(issueDocMap, "subIssueVersions")
                         if (ver.isNullOrEmpty()) {
                             ver = buildVersion()
@@ -66,6 +76,7 @@ object ExcelManager {
                         createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_EXCEPTION_COUNT]!!).setCellValue(get(issueDocMap, "count").toFloat().toInt().toString())
                         createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_IMEI_COUNT]!!).setCellValue(get(issueDocMap, "deviceCount").toFloat().toInt().toString())
                         createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_STACK_FEATURE]!!).setCellValue(get(issueDocMap, "keyStack"))
+                        createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_EXP_MESSAGE]!!).setCellValue(expMessage)
                         createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_STACK_DETAIL]!!).setCellValue(get(crashInfo?.crashDocMap, "callStack"))
                         createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_STACK_DETAIL_DECODE]!!).setCellValue(get(crashInfo?.crashDocMap, "callStackDecode"))
                         val detailUrl = if ("ANR_EXCEPTION".equals(expName, true)) {
@@ -128,6 +139,7 @@ object ExcelManager {
         with(XSSFWorkbook()) {
             val crashSheet = createSheet("Crash").also {
                 it.setColumnWidth(CrashExcelConfig.columns[CrashExcelConfig.TITLE_STACK_FEATURE]!!, 256 * 80)
+                it.setColumnWidth(CrashExcelConfig.columns[CrashExcelConfig.TITLE_EXP_MESSAGE]!!, 256 * 80)
                 it.setColumnWidth(CrashExcelConfig.columns[CrashExcelConfig.TITLE_PRODUCT_VERSION]!!, 256 * 16)
                 it.setColumnWidth(CrashExcelConfig.columns[CrashExcelConfig.TITLE_VERSION]!!, 256 * 26)
                 it.setColumnWidth(CrashExcelConfig.columns[CrashExcelConfig.TITLE_STACK_DETAIL]!!, 256 * 50)
