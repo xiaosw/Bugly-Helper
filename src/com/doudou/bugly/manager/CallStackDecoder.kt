@@ -47,14 +47,14 @@ object CallStackDecoder {
                             }
                         }?.let { soPath ->
                             val cmd = "$cmdPrefix $soPath ${addrs.addrs()}"
-//                            Log.i("cmd = $cmd")
+                            Log.i("cmd = $cmd")
                             Runtime.getRuntime().exec(cmd)?.let { process ->
                                 BufferedReader(InputStreamReader(process.inputStream)).use { br ->
                                     var line: String?
                                     while (br.readLine().also { l -> line = l } != null) {
-                                        if (IGNORE_DECODE == line) {
-                                            continue
-                                        }
+//                                        if (IGNORE_DECODE == line) {
+//                                            continue
+//                                        }
                                         sb.append(line).append("\n")
                                     }
                                 }

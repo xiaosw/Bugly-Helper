@@ -35,23 +35,29 @@ fun main(vararg args: String) {
     try {
         Log.i("launch bugly helper.")
         if (TEST) {
-            BuglyManager.generatorExcel("2527295ba1",
-                "805749931",
-                "bugly-session=s%3ArsW5lAd3gKgVD1FwDnhWeo2FvhPh5bDv.XdU%2BGLfaRH9PalZJ5mdQjDIiceDeqPy07YbCGiDeW04",
-                "bugly_session=eyJpdiI6IjExbE1GVTc5b0VHR041U2N1WWZzMVE9PSIsInZhbHVlIjoiYXVzbXlkWmJqY21uMjJoeFVGc3g5S09qeEoxZUU5S3N2SSs1TFRhbktSOXo3RTUyc1ZiVVBQWjRJSEVaOTFQN0l6MW9DUUpma05OS1h2NWhKVFZUaGc9PSIsIm1hYyI6IjY2ZDU2YjBkODJhZTY4ZDUwYWEwZmQ2OGU4Y2QzYWRkMmY2YjZhM2RlN2Y3Nzc5NGUwNDZmZWMwNmUzYjI3NDQifQ%3D%3D",
-                "1.4.1",
-                "2021-10-28",
-                "2021-10-28",
-                0,
-                100,
-                "C:\\\\Users\\\\admin\\\\Downloads\\\\libunity.sym.so",
-                "C:\\\\Users\\\\admin\\\\Downloads\\\\arm64-v8a\\\\libil2cpp.so",
-                "E:\\Workspace\\Demo\\Bugly-Helper\\release\\build",
-                "D:\\Dev\\NDK\\android-ndk-r19c-windows-x86_64\\android-ndk-r19c\\toolchains\\aarch64-linux-android-4.9\\prebuilt\\windows-x86_64\\bin\\aarch64-linux-android-addr2line.exe -C -f -e",
-                AtomicInteger(0),
-                1,
-                System.currentTimeMillis()
-            )
+//            BuglyManager.generatorExcel("2527295ba1",
+//                "805749931",
+//                "bugly-session=s%3ArsW5lAd3gKgVD1FwDnhWeo2FvhPh5bDv.XdU%2BGLfaRH9PalZJ5mdQjDIiceDeqPy07YbCGiDeW04",
+//                "bugly_session=eyJpdiI6IjExbE1GVTc5b0VHR041U2N1WWZzMVE9PSIsInZhbHVlIjoiYXVzbXlkWmJqY21uMjJoeFVGc3g5S09qeEoxZUU5S3N2SSs1TFRhbktSOXo3RTUyc1ZiVVBQWjRJSEVaOTFQN0l6MW9DUUpma05OS1h2NWhKVFZUaGc9PSIsIm1hYyI6IjY2ZDU2YjBkODJhZTY4ZDUwYWEwZmQ2OGU4Y2QzYWRkMmY2YjZhM2RlN2Y3Nzc5NGUwNDZmZWMwNmUzYjI3NDQifQ%3D%3D",
+//                "1.4.1",
+//                "2021-10-28",
+//                "2021-10-28",
+//                0,
+//                100,
+//                "C:\\\\Users\\\\admin\\\\Downloads\\\\libunity.sym.so",
+//                "C:\\\\Users\\\\admin\\\\Downloads\\\\arm64-v8a\\\\libil2cpp.so",
+//                "E:\\Workspace\\Demo\\Bugly-Helper\\release\\build",
+//                "D:\\Dev\\NDK\\android-ndk-r19c-windows-x86_64\\android-ndk-r19c\\toolchains\\aarch64-linux-android-4.9\\prebuilt\\windows-x86_64\\bin\\aarch64-linux-android-addr2line.exe -C -f -e",
+//                AtomicInteger(0),
+//                1,
+//                System.currentTimeMillis()
+//            )
+
+            val decodeMap = mutableMapOf<String, String>()
+            decodeMap[getKey(ArgsKey.KEY_UNITY_SO_PATH.value)] = "/Users/Master/Documents/Self/Bugly-Helper/release/libs/arm64-v8a/libunity.sym.so"
+            decodeMap[getKey(ArgsKey.KEY_IL_2_CPP_SO_PATH.value)] = "/Users/Master/Downloads/libil2cpp4.so"
+            decodeMap[getKey(KEY_DECODER_ADDR)] ="/Users/Master/Documents/Self/Bugly-Helper/release/CallStack.txt"
+            decodeAddrs(decodeMap, "/Users/Master/DevelopTool/Java/NDK/android-ndk-r20/toolchains/aarch64-linux-android-4.9/prebuilt/darwin-x86_64/bin/aarch64-linux-android-addr2line -C -f -e")
             return
         }
 
