@@ -1,52 +1,66 @@
-java.lang.Error:FATAL EXCEPTION [main]
-Unity version     : 2020.3.0f1c1
-Device model      : realme RMX1931
-Device fingerprint: google/android_x86/x86:7.1.2/N2G47H/G955FXXU1AQJ5:/release-keys
-Build Type        : Development
-Scripting Backend : IL2CPP
-ABI               : armeabi-v7a
-Strip Engine Code : true
-
-
-......
-Caused by:
-java.lang.Error:*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
-Version '2020.3.0f1c1 (1e553bf703d9)', Build type 'Development', Scripting Backend 'il2cpp', CPU 'armeabi-v7a'
-Build fingerprint: 'google/android_x86/x86:7.1.2/N2G47H/G955FXXU1AQJ5:/release-keys'
-Revision: '0'
-ABI: 'arm'
-Timestamp: 2021-10-09 10:15:13+0800
-pid: 5351, tid: 5684, name: Loading.Preload  >>> com.qire.mnjt <<<
-uid: 10047
-signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0xfffff0
-    r0  00fffff0  r1  01000000  r2  0000000c  r3  00fffff0
-    r4  0587cf30  r5  8f53f8a0  r6  00000000  r7  01000000
-    r8  00000010  r9  000aaab8  r10 c621f008  r11 0587d030
-    ip  054d9a7d  sp  8f53f888  lr  0587a044  pc  043e0247
-
-backtrace:
-      #00 pc 003e0247  /data/app/com.qire.mnjt-1/lib/arm/libunity.so
-      #01 pc 003e03f5  /data/app/com.qire.mnjt-1/lib/arm/libunity.so
-      #02 pc 003d2ee5  /data/app/com.qire.mnjt-1/lib/arm/libunity.so
-      #03 pc 003d022d  /data/app/com.qire.mnjt-1/lib/arm/libunity.so
-      #04 pc 0
+26
 [Message over limit size:1000, has been cutted!]
-libunity.0x3e0247(Native Method)
-libunity.0x3e03f5(Native Method)
-libunity.0x3d2ee5(Native Method)
-libunity.0x3d022d(Native Method)
-libunity.0x719c89(Native Method)
-libunity.0x164435(Native Method)
-libunity.0x4e4fd1(Native Method)
-libunity.0x53eae9(Native Method)
-libunity.0x53fc53(Native Method)
-libunity.0x53eee9(Native Method)
-libunity.0x813b13(Native Method)
-libunity.0x8088a5(Native Method)
-libunity.0x808dbf(Native Method)
-libunity.0x5ffee7(Native Method)
-libunity.0x60149f(Native Method)
-libunity.0x60136b(Native Method)
-libunity.0x6012f7(Native Method)
-libunity.0x764f3b(Native Method)
-libtcb.0x7341e(Native Method)
+27
+libc.memset(memset:140)
+28
+libil2cpp.0x10d8d70(Native Method)
+29
+libil2cpp.0x10d8d8c(Native Method)
+30
+libil2cpp.0x10d8d8c(Native Method)
+31
+libil2cpp.0x10d8d8c(Native Method)
+32
+libil2cpp.0x10d8d8c(Native Method)
+33
+libil2cpp.0x10d8d8c(Native Method)
+34
+libil2cpp.0x10cda70(Native Method)
+35
+libil2cpp.0x10a8f80(Native Method)
+36
+libil2cpp.0x1380b0c(Native Method)
+37
+libil2cpp.0xe8a0cc(Native Method)
+38
+libil2cpp.0x10aa8ec(Native Method)
+39
+libil2cpp.0x10af234(Native Method)
+40
+libil2cpp.0x1086c64(Native Method)
+41
+libil2cpp.0x28fb568(Native Method)
+42
+libil2cpp.0x2782914(Native Method)
+43
+libil2cpp.0x13846e4(Native Method)
+44
+libil2cpp.0x170cb48(Native Method)
+45
+libil2cpp.0x1818864(Native Method)
+46
+libil2cpp.0x24a5650(Native Method)
+47
+libil2cpp.0x11ba398(Native Method)
+48
+libil2cpp.0x17c6cf4(Native Method)
+49
+libil2cpp.0x1382d10(Native Method)
+50
+libil2cpp.0x170cb74(Native Method)
+51
+libil2cpp.0x1818864(Native Method)
+52
+libil2cpp.0x24a5650(Native Method)
+53
+libil2cpp.0x11ba398(Native Method)
+54
+libil2cpp.0x17c6cf4(Native Method)
+55
+libil2cpp.0x1382d10(Native Method)
+56
+libil2cpp.0x170cb74(Native Method)
+57
+libil2cpp.0x1818864(Native Method)
+58
+libil2cpp.0x24a5650(Native Method)

@@ -257,9 +257,6 @@ object BuglyManager {
 
             private fun doLast(appInfo: AppInfo?) {
                 Log.i("advancedSearch...")
-                val searchUrl = version?.let {
-                    "https://bugly.qq.com/v2/search?startDateStr=${startDateStr}&start=${pageIndex * pageSize}&userSearchPage=%2Fv2%2Fcrash-reporting%2Fadvanced-search%2F2527295ba1&endDateStr=${endDateStr}&pid=1&platformId=1&date=custom&sortOrder=desc&useSearchTimes=11&version=${version}&rows=${pageSize}&sortField=matchCount&appId=${appId}&fsn=d054240e-9fbf-432c-a1fc-e7ac7770a13c"
-                } ?: "https://bugly.qq.com/v2/search?startDateStr=${startDateStr}&start=${pageIndex * pageSize}&userSearchPage=%2Fv2%2Fcrash-reporting%2Fadvanced-search%2F2527295ba1&endDateStr=${endDateStr}&pid=1&platformId=1&date=custom&sortOrder=desc&useSearchTimes=11&rows=${pageSize}&sortField=matchCount&appId=${appId}&fsn=d054240e-9fbf-432c-a1fc-e7ac7770a13c"
                 val processors = mutableMapOf<String, String>()
                 var appName = appInfo?.let {
                     it.processorList?.forEach { processor ->
@@ -267,93 +264,146 @@ object BuglyManager {
                     }
                     it.appName
                 } ?: "Unknown"
-                OkHttpUtil.get(token, cookieNewApi, searchUrl, object : OkHttpUtil.CommonCallback {
-                    override fun onComplete(code: Int, response: String?) {
-                        if (code != 200) {
-                            callback.onFail(code, response)
-                            return
-                        }
-                        response?.let { responseJson ->
-                            val advancedSearchResponse = Gson().fromJson(responseJson, AdvancedSearchResponse::class.java)
-                            if (advancedSearchResponse.status != 200) {
-                                callback.onFail(advancedSearchResponse.status, advancedSearchResponse.msg)
-                                Log.i(" advancedSearch【$version】: $response")
-                                return
-                            }
-                            val count = AtomicInteger()
-                            val size = advancedSearchResponse.ret.issueList.size
-                            Log.i("advancedSearch【$version】: size = $size")
-                            val progress = Progress(size, count.get())
-                            advancedSearchResponse.ret.issueList.forEach { issue ->
-                                issue.searchVer = version
-                                issue.appName = appName
+                queryIssueList(appId, token, cookieOldApi, cookieNewApi, version, startDateStr, endDateStr, pageIndex
+                        , pageSize, appName, processors, callback)
+            }
+
+        })
+    }
+
+    private fun handlerVer(version: String?) : String {
+        return if (version?.isNotEmpty() == true) {
+            version
+        } else "all"
+    }
+
+    private fun queryIssueList(appId: String, token: String, cookieOldApi: String, cookieNewApi: String, version: String?
+                               , startDateStr: String,endDateStr: String, pageIndex: Int, pageSize: Int, appName: String
+                               , processors: MutableMap<String, String>, callback: Callback<AdvancedSearchResponse>
+                               , lastData: AdvancedSearchResponse? = null) {
+        val searchUrl = version?.let {
+            "https://bugly.qq.com/v2/search?startDateStr=${startDateStr}&start=${pageIndex * pageSize}&userSearchPage=%2Fv2%2Fcrash-reporting%2Fadvanced-search%2F2527295ba1&endDateStr=${endDateStr}&pid=1&platformId=1&date=custom&sortOrder=desc&useSearchTimes=11&version=${version}&rows=${pageSize}&sortField=matchCount&appId=${appId}&fsn=d054240e-9fbf-432c-a1fc-e7ac7770a13c"
+        } ?: "https://bugly.qq.com/v2/search?startDateStr=${startDateStr}&start=${pageIndex * pageSize}&userSearchPage=%2Fv2%2Fcrash-reporting%2Fadvanced-search%2F2527295ba1&endDateStr=${endDateStr}&pid=1&platformId=1&date=custom&sortOrder=desc&useSearchTimes=11&rows=${pageSize}&sortField=matchCount&appId=${appId}&fsn=d054240e-9fbf-432c-a1fc-e7ac7770a13c"
+
+        Log.i("queryIssueList【${handlerVer(version)}】: page = ${pageIndex + 1}")
+        OkHttpUtil.get(token, cookieNewApi, searchUrl, object : OkHttpUtil.CommonCallback {
+            override fun onComplete(code: Int, response: String?) {
+                if (code != 200) {
+                    callback.onFail(code, response)
+                    return
+                }
+                response?.let { responseJson ->
+                    val advancedSearchResponse = Gson().fromJson(responseJson, AdvancedSearchResponse::class.java)
+                    if (advancedSearchResponse.status != 200) {
+                        callback.onFail(advancedSearchResponse.status, advancedSearchResponse.msg)
+                        Log.i(" queryIssueList【${handlerVer(version)}】: $response")
+                        return
+                    }
+                    val size = advancedSearchResponse.ret.issueList.size
+                    val allData = lastData?.also {
+                        it.ret.issueList.addAll(advancedSearchResponse.ret.issueList)
+                    } ?: advancedSearchResponse
+                    if (size === 0) {
+                        complete(allData)
+                        return
+                    }
+                    val count = AtomicInteger()
+                    Log.i("queryIssueList【${handlerVer(version)}】: size = $size")
+                    val progress = Progress(size, count.get())
+                    advancedSearchResponse.ret.issueList.forEach { issue ->
+                        issue.searchVer = version
+                        issue.appName = appName
 //                        if (issue.crashInfo?.crashDocMap.isNullOrEmpty()) {
-                                if (true) {
-                                    val detailUrl = URL_STACK_DETAIL
-                                        .replace(APP_ID_PLACEHOLDER, appId)
-                                        .replace(ISSUE_PLACEHOLDER, issue.issueId)
-                                    queryStackDetail(token, cookieOldApi, detailUrl, appId, object : Callback<StackDetail> {
-                                        override fun onFail(code: Int, msg: String?) {
-                                            val isComplete = addAndGet(count, size)
-                                            progress.update(count.get())
-                                            if (isComplete) {
-                                                complete(advancedSearchResponse)
-                                            }
+                        if (true) {
+                            val detailUrl = URL_STACK_DETAIL
+                                    .replace(APP_ID_PLACEHOLDER, appId)
+                                    .replace(ISSUE_PLACEHOLDER, issue.issueId)
+                            queryStackDetail(token, cookieOldApi, detailUrl, appId, object : Callback<StackDetail> {
+                                override fun onFail(code: Int, msg: String?) {
+                                    val isComplete = addAndGet(count, size)
+                                    progress.update(count.get())
+                                    if (isComplete) {
+                                        if (checkHasNextPage(advancedSearchResponse)) {
+                                            queryIssueList(appId, token, cookieOldApi, cookieNewApi, version, startDateStr, endDateStr, pageIndex + 1
+                                                    , pageSize, appName, processors, callback, allData)
+                                        } else {
+                                            complete(allData)
                                         }
-
-                                        override fun onSuccess(t: StackDetail) {
-                                            if (t.data?.crashMap?.isEmpty() != false) {
-                                                Log.i("----------------> t = $t")
-                                            }
-                                            issue.issueDocMap?.put("processorName", processors[issue.issueDocMap["processor"]])
-                                            issue.crashInfo?.apply {
-                                                crashDocMap = t.data?.crashMap.apply {
-                                                    this?.put("launchTime", t.data?.launchTime)
-                                                }
-                                            }
-                                            val isComplete = addAndGet(count, size)
-                                            progress.update(count.get())
-                                            if (isComplete) {
-                                                complete(advancedSearchResponse)
-                                            }
-                                        }
-
-                                    })
-                                } else {
-                                    val detailUrlByHash = URL_STACK_DETAIL_BY_HASH
-                                        .replace(APP_ID_PLACEHOLDER, appId)
-                                        .replace(CRASH_HASH_PLACEHOLDER, issue.crashInfo?.crashHash ?: "")
-                                    queryStackDetailByHash(token, cookieOldApi, detailUrlByHash, object : Callback<StackDetail> {
-                                        override fun onFail(code: Int, msg: String?) {
-                                            if (addAndGet(count, size)) {
-                                                complete(advancedSearchResponse)
-                                            }
-                                            progress.update(count.get())
-                                        }
-
-                                        override fun onSuccess(t: StackDetail) {
-                                            issue.crashInfo?.apply {
-                                                Log.i("issueId =${issue.issueId}, ${t.data?.launchTime}")
-                                                crashDocMap?.put("launchTime", t.data?.launchTime)
-                                            }
-                                            if (addAndGet(count, size)) {
-                                                complete(advancedSearchResponse)
-                                            }
-                                            progress.update(count.get())
-                                        }
-                                    })
+                                    }
                                 }
-                            }
+
+                                override fun onSuccess(t: StackDetail) {
+                                    if (t.data?.crashMap?.isEmpty() != false) {
+                                        Log.i("----------------> t = $t")
+                                    }
+                                    issue.issueDocMap?.put("processorName", processors[issue.issueDocMap["processor"]])
+                                    issue.crashInfo?.apply {
+                                        crashDocMap = t.data?.crashMap.apply {
+                                            this?.put("launchTime", t.data?.launchTime)
+                                        }
+                                    }
+                                    val isComplete = addAndGet(count, size)
+                                    progress.update(count.get())
+                                    if (isComplete) {
+                                        if (checkHasNextPage(advancedSearchResponse)) {
+                                            queryIssueList(appId, token, cookieOldApi, cookieNewApi, version, startDateStr, endDateStr, pageIndex + 1
+                                                    , pageSize, appName, processors, callback, allData)
+                                        } else {
+                                            complete(allData)
+                                        }
+                                    }
+                                }
+
+                            })
+                        } else {
+                            val detailUrlByHash = URL_STACK_DETAIL_BY_HASH
+                                    .replace(APP_ID_PLACEHOLDER, appId)
+                                    .replace(CRASH_HASH_PLACEHOLDER, issue.crashInfo?.crashHash ?: "")
+                            queryStackDetailByHash(token, cookieOldApi, detailUrlByHash, object : Callback<StackDetail> {
+                                override fun onFail(code: Int, msg: String?) {
+                                    if (addAndGet(count, size)) {
+                                        if (checkHasNextPage(advancedSearchResponse)) {
+                                            queryIssueList(appId, token, cookieOldApi, cookieNewApi, version, startDateStr, endDateStr, pageIndex + 1
+                                                    , pageSize, appName, processors, callback, allData)
+                                        } else {
+                                            complete(allData)
+                                        }
+                                    }
+                                    progress.update(count.get())
+                                }
+
+                                override fun onSuccess(t: StackDetail) {
+                                    issue.crashInfo?.apply {
+                                        Log.i("issueId =${issue.issueId}, ${t.data?.launchTime}")
+                                        crashDocMap?.put("launchTime", t.data?.launchTime)
+                                    }
+                                    if (addAndGet(count, size)) {
+                                        if (checkHasNextPage(advancedSearchResponse)) {
+                                            queryIssueList(appId, token, cookieOldApi, cookieNewApi, version, startDateStr, endDateStr, pageIndex + 1
+                                                    , pageSize, appName, processors, callback, allData)
+                                        } else {
+                                            complete(allData)
+                                        }
+                                    }
+                                    progress.update(count.get())
+                                }
+                            })
+                        }
+                    }
 //                    callback.onSuccess(advancedSearchResponse)
-                        } ?: callback.onFail(code, "response is null!")
+                } ?: callback.onFail(code, "response is null!")
 
-                    }
+            }
 
-                    private fun complete(advancedSearchResponse: AdvancedSearchResponse) {
-                        callback.onSuccess(advancedSearchResponse)
-                    }
+            private fun complete(advancedSearchResponse: AdvancedSearchResponse) {
+                callback.onSuccess(advancedSearchResponse)
+            }
 
-                })
+            private fun checkHasNextPage(advancedSearchResponse: AdvancedSearchResponse) : Boolean {
+                if (advancedSearchResponse?.ret?.issueList.size === pageSize) {
+                    return true
+                }
+                return false
             }
 
         })
@@ -375,28 +425,37 @@ object BuglyManager {
                     val count = AtomicInteger()
                     val size = response.ret.issueList.size
                     // i("advancedSearch complete: count = $size")
-                    Log.i("decodeCallStack...")
+                    Log.i("decodeCallStack... size = $size")
+                    val progress = Progress(size, count.get())
                     response.ret.issueList.forEach {
                         val callStack = it.crashInfo?.crashDocMap?.get("callStack")?.toString() ?: ""
                         CallStackDecoder.decodeCallStack(callStack, cmd, unitySoPath, il2cppSoPath, version, object : Callback<String> {
                             override fun onFail(code: Int, msg: String?) {
-                                if (addAndGet(count, size)) {
+                                val isComplete = addAndGet(count, size)
+                                progress.update(count.get())
+                                if (isComplete) {
                                     onComplete()
                                 }
                             }
 
                             override fun onSuccess(decodeAddr: String) {
                                 it.crashInfo?.crashDocMap?.put("callStackDecode", decodeAddr)
-                                if (addAndGet(count, size)) {
+                                val isComplete = addAndGet(count, size)
+                                progress.update(count.get())
+                                if (isComplete) {
                                     onComplete()
                                 }
                             }
 
                             private fun onComplete() {
                                 Log.i("decodeCallStack complete...")
+                                var pageNum = size / pageSize
+                                if (size % pageSize > 0) {
+                                    pageNum++
+                                }
                                 val excelName = version?.let {
-                                    "Bugly_advanced_search_${version}_${startDateStr}_$endDateStr"
-                                } ?: "Bugly_advanced_search_${startDateStr}_$endDateStr"
+                                    "Bugly_advanced_search_${version}_${startDateStr}_${endDateStr}_${pageNum}_$size"
+                                } ?: "Bugly_advanced_search_all_${startDateStr}_${endDateStr}_${pageNum}_$size"
                                 ExcelManager.createCrashTable(outDir, excelName, response)
                                 Log.i("total duration = ${System.currentTimeMillis() - start}")
                                 if (addAndGet(indexCount, totalCount)) {

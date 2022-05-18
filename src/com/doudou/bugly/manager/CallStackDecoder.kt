@@ -47,7 +47,7 @@ object CallStackDecoder {
                             }
                         }?.let { soPath ->
                             val cmd = "$cmdPrefix $soPath ${addrs.addrs()}"
-                            Log.i("cmd = $cmd")
+//                            Log.i("cmd = $cmd")
                             Runtime.getRuntime().exec(cmd)?.let { process ->
                                 BufferedReader(InputStreamReader(process.inputStream)).use { br ->
                                     var line: String?
@@ -71,7 +71,8 @@ object CallStackDecoder {
                 }
                 callback.onSuccess(sb.toString())
             }
-        }.start()
+//        }.start()
+        }.run() // 不开线程
     }
 
     fun parseAddrs(callStack: String) : MutableList<Addrs> {

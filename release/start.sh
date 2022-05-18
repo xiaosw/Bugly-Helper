@@ -6,16 +6,16 @@
 # cookieNew -> https://bugly.qq.com/v2/search
 # token -> X-token
 java -jar Bugly-Helper.jar \
--appId 2527295ba1 \
--token 834880504 \
--cookieOld bugly-session=s%3AbUAkW_ftWP2GQHUJxBnzppCgik-pmD2c.x4Ul5DCZxPCAkUO6vWVUgzSAUnVF33edP%2FRY716ASgc \
--cookieNew bugly_session=eyJpdiI6Im1NcndNYTBLTGJPaUhzemQ4MGt6WkE9PSIsInZhbHVlIjoidzFNOGNJeE5rWml1UzBOQ2psYmtEN21iZFYwRTJGOWpFN2NzSmxhbkFaS054SGZJNWxcL3pEOHRrdnVcL0dMTFpUcER3bzg2MDFEMXNyUVRMMk9JV0M1UT09IiwibWFjIjoiMWYwZTllMGE5YTIwNDRmZmY2MDgxNTM3MTljMzkzYTFmMzg3YjBjNzUxOTI0N2MyMjMzZDg5OTFmMGUzN2RhOSJ9 \
--appVer 1.2.9\&1.2.5 \
--startDateStr 2021-09-23 \
--endDateStr 2021-09-23 \
+-appId b0b1bd57b7 \
+-token 1514789832 \
+-cookieOld bugly-session=s%3A0yzD04jBVgRDVw8h3-VUwFxlZ3Vzj8TD.jCYkSKl95%2BqFxCWpNbBJrGdV873p95svw4idmNzj1ZI \
+-cookieNew bugly_session=eyJpdiI6InQyMFpWeUNBMnpWeVBGTGpEaDcwTFE9PSIsInZhbHVlIjoiMEhNZWtGMWpuUHhpM1ExZVFuSkIzOHY2c05FaFdRUldiT2YzS0pNS0JsU3U5XC9YMm9NZ2dmdTJ4bGRnZjVIWUFtUVUrZjlcL2djdDlNdzJ0V0VxQ3ljdz09IiwibWFjIjoiOTJmZmRmNjcyYjc4ZGEwOTBmYjA3YjljYWEzYjAzNmJhMDU2NDMxMWVhZTk4NGYxOWRkOTcyMmJiYzE2MTM0NSJ9 \
+-appVer "" \
+-startDateStr 2022-05-10 \
+-endDateStr 2022-05-19 \
 -pageIndex 0 \
 -pageSize 100 \
--unity E:/Workspace/Demo/Bugly-Helper/release/libs/arm64-v8a/libunity.sym.so \
--il2cpp E:/Workspace\Demo/Bugly-Helper/release/libs/arm64-v8a/libil2cpp.so \
--out E:/Workspace/Demo/Bugly-Helper/release/build \
--cmd "D:/Dev/NDK/android-ndk-r19c-windows-x86_64/android-ndk-r19c/toolchains/aarch64-linux-android-4.9/prebuilt/windows-x86_64/bin/aarch64-linux-android-addr2line.exe -C -f -e"
+-unity /Users/Master/Documents/Self/Bugly-Helper/release/libs/arm64-v8a/libunity.sym.so \
+-il2cpp /Users/Master/Downloads/libil2cpp_105.so \
+-out /Users/Master/Documents/Self/Bugly-Helper/release/build \
+-cmd "/Users/Master/DevelopTool/Java/NDK/android-ndk-r20/toolchains/aarch64-linux-android-4.9/prebuilt/darwin-x86_64/bin/aarch64-linux-android-addr2line -C -f -e"
