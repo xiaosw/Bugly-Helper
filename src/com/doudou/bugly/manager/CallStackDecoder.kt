@@ -14,7 +14,7 @@ object CallStackDecoder {
     private const val ADDR_SUFFIX = "(Native Method)"
     private const val IGNORE_DECODE = "??:?"
 
-    fun decodeCallStack(callStack: String, cmd: String, unitySoPath: String, il2cppSoPath: String
+    fun decodeCallStack(callStack: String, cmd: String, unitySoPath: String?, il2cppSoPath: String?
                         , appVer: String? = null, callback: Callback<String>) {
         val addrs = parseAddrs(callStack)
         if (addrs.isEmpty()) {
@@ -24,7 +24,7 @@ object CallStackDecoder {
         decodeCallStack(addrs, cmd, unitySoPath, il2cppSoPath, appVer, callback)
     }
 
-    fun decodeCallStack(addrsList: MutableList<Addrs>, cmd: String, unitySoPath: String, il2cppSoPath: String
+    fun decodeCallStack(addrsList: MutableList<Addrs>, cmd: String, unitySoPath: String?, il2cppSoPath: String?
                         , appVer: String? = null, callback: Callback<String>) {
 
         val cmdPrefix = cmd
@@ -59,6 +59,8 @@ object CallStackDecoder {
                                     }
                                 }
                             }
+                        } ?: sb.append("not find decode so path!\n").also {
+                            Log.e("not find so path!")
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()

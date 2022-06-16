@@ -410,8 +410,8 @@ object BuglyManager {
     }
 
     fun generatorExcel(appId: String, token: String, cookieOldApi: String, cookieNewApi: String, version: String?,
-                       startDateStr: String, endDateStr: String, pageIndex: Int, pageSize: Int, unitySoPath: String,
-                       il2cppSoPath: String, outDir: String, cmd: String, indexCount: AtomicInteger,
+                       startDateStr: String, endDateStr: String, pageIndex: Int, pageSize: Int
+                       , abis: MutableMap<String, SoInfo>, outDir: String, cmd: String, indexCount: AtomicInteger,
                        totalCount: Int, startTime: Long) {
         val start = System.currentTimeMillis()
         Log.i("generatorExcel... ")
@@ -429,7 +429,13 @@ object BuglyManager {
                     val progress = Progress(size, count.get())
                     response.ret.issueList.forEach {
                         val callStack = it.crashInfo?.crashDocMap?.get("callStack")?.toString() ?: ""
-                        CallStackDecoder.decodeCallStack(callStack, cmd, unitySoPath, il2cppSoPath, version, object : Callback<String> {
+                        val cpuType = it.crashInfo?.crashDocMap?.get("cpuType")?.toString()?.toLowerCase() ?: ""
+                        val so = abis[cpuType]
+                        if (null == so) {
+                            val issueId = it.crashInfo?.crashDocMap?.get("issueId")?.toString()?.toLowerCase() ?: ""
+                            Log.e("【$issueId】 cupType is 【$cpuType】, please config abi [-abis {\"$cpuType\":{\"unity\":\"xxx\", \"il2cpp\":\"xxx\"}}]")
+                        }
+                        CallStackDecoder.decodeCallStack(callStack, cmd, so?.unity, so?.il2cpp, version, object : Callback<String> {
                             override fun onFail(code: Int, msg: String?) {
                                 val isComplete = addAndGet(count, size)
                                 progress.update(count.get())

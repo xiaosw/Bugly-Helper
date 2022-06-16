@@ -30,7 +30,7 @@ object OkHttpUtil {
             }
 
             override fun onResponse(call: Call, response: Response) {
-                callback.onComplete(200, response.body?.string())
+                callback.onComplete(200, response.body()?.string())
             }
 
         })
@@ -51,7 +51,7 @@ object OkHttpUtil {
             }
 
             override fun onResponse(call: Call, response: Response) {
-                callback.onComplete(rowIndex, response.body?.string())
+                callback.onComplete(rowIndex, response.body()?.string())
             }
 
         })

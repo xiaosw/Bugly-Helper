@@ -1,8 +1,12 @@
 package com.doudou.bugly
 
+import com.doudou.bugly.bean.SoInfo
 import com.doudou.bugly.callback.Callback
 import com.doudou.bugly.manager.BuglyManager
 import com.doudou.bugly.manager.CallStackDecoder
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
@@ -19,8 +23,14 @@ enum class ArgsKey(val value: String) {
     KEY_END_DATE_STR("-endDateStr"),
     KEY_PAGE_INDEX("-pageIndex"),
     KEY_PAGE_SIZE("-pageSize"),
-    KEY_UNITY_SO_PATH("-unity"),
-    KEY_IL_2_CPP_SO_PATH("-il2cpp"),
+    // armeabi: ARMv5, ARMv8, x86, x86_64
+    // armeabi-v7a: ARMv7， ARMv8， x86
+    // arm64-v8a: ARMv8
+    // mips: MIPS, MIPS64
+    // mips64： MIPS64
+    // x86: x86, x86_64
+    // x86_64: x86_64
+    KEY_ABIS("-abis"),
     KEY_OUT_DIR("-out"),
     KEY_CMD("-cmd")
 }
@@ -29,6 +39,9 @@ const val KEY_DECODER_ADDR = "-decode"
 
 const val APP_VER_SPLIT = "&"
 const val TEST = false
+
+var isDebug = false
+    private set
 
 @JvmName("main")
 fun main(vararg args: String) {
@@ -54,8 +67,7 @@ fun main(vararg args: String) {
 //            )
 
             val decodeMap = mutableMapOf<String, String>()
-            decodeMap[getKey(ArgsKey.KEY_UNITY_SO_PATH.value)] = "/Users/Master/Documents/Self/Bugly-Helper/release/libs/arm64-v8a/libunity.sym.so"
-            decodeMap[getKey(ArgsKey.KEY_IL_2_CPP_SO_PATH.value)] = "/Users/Master/Downloads/libil2cpp4.so"
+            decodeMap[getKey(ArgsKey.KEY_ABIS.value)] = """{"armeabi":{"unity":"unity.so","il2cpp":"il2cpp.so"}}"""
             decodeMap[getKey(KEY_DECODER_ADDR)] ="/Users/Master/Documents/Self/Bugly-Helper/release/CallStack.txt"
             decodeAddrs(decodeMap, "/Users/Master/DevelopTool/Java/NDK/android-ndk-r20/toolchains/aarch64-linux-android-4.9/prebuilt/darwin-x86_64/bin/aarch64-linux-android-addr2line -C -f -e")
             return
@@ -67,6 +79,13 @@ fun main(vararg args: String) {
         for (i in args.indices step 2) {
             if (i + 1 < argCount) {
                 argsMap[getKey(args[i])] = args[i + 1]
+            }
+        }
+        isDebug = "true".equals(argsMap[getKey("-debug")], true)
+
+        if (isDebug) {
+            argsMap.forEach { (key, value) ->
+                Log.i("arg: $key = $value")
             }
         }
 
@@ -109,20 +128,28 @@ fun main(vararg args: String) {
     }
 }
 
+private fun parseAbis(abis: String?) = abis?.let {
+    val abisType = object : TypeToken<MutableMap<String, SoInfo>>(){}.type
+    try {
+        val abisJson = if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
+            abis.replace("\\", "\\\\")
+        } else abis
+        GsonBuilder().disableHtmlEscaping().create().fromJson<MutableMap<String, SoInfo>>(abisJson, abisType)
+    } catch (e: Exception) {
+        Log.e(e.message)
+        mutableMapOf()
+    }
+} ?: mutableMapOf()
+
 private fun decodeAddrs(argsMap: MutableMap<String, String>, cmd: String) {
     argsMap[KEY_DECODER_ADDR]?.let { content ->
-        val unity = argsMap[getKey(ArgsKey.KEY_UNITY_SO_PATH.value)] ?: ""
-        if (unity.isNullOrEmpty()) {
-            Log.e("unity so is null")
+        val abi = argsMap[getKey(ArgsKey.KEY_ABIS.value)]
+        if (abi.isNullOrEmpty()) {
+            Log.e("abis is null")
             pause()
             return
         }
-        val il2cpp = argsMap[getKey(ArgsKey.KEY_IL_2_CPP_SO_PATH.value)] ?: ""
-        if (il2cpp.isNullOrEmpty()) {
-            Log.e("il2cpp so is null")
-            pause()
-            return
-        }
+        val soInfo = Gson().fromJson(argsMap[getKey(ArgsKey.KEY_ABIS.value)], SoInfo::class.java)
         try {
             val decodeFile = File(content)
             val decodeContent = if (decodeFile.exists() && decodeFile.isFile) {
@@ -140,7 +167,7 @@ private fun decodeAddrs(argsMap: MutableMap<String, String>, cmd: String) {
                 content
             }
             decodeContent?.let {
-                CallStackDecoder.decodeCallStack(it, cmd, unity, il2cpp, "decode-addrs", object : Callback<String> {
+                CallStackDecoder.decodeCallStack(it, cmd, soInfo.unity, soInfo.il2cpp,"decode-addrs", object : Callback<String> {
                     override fun onFail(code: Int, msg: String?) {
                         Log.e("decode fail: $code, $msg")
                     }
@@ -175,8 +202,7 @@ private fun generatorExcel(appVer: String?, argsMap: MutableMap<String, String>,
                 get(argsMap, ArgsKey.KEY_END_DATE_STR.value),
                 get(argsMap, ArgsKey.KEY_PAGE_INDEX.value).toInt(),
                 get(argsMap, ArgsKey.KEY_PAGE_SIZE.value).toInt(),
-                get(argsMap, ArgsKey.KEY_UNITY_SO_PATH.value),
-                get(argsMap, ArgsKey.KEY_IL_2_CPP_SO_PATH.value),
+                parseAbis(get(argsMap, ArgsKey.KEY_ABIS.value)),
                 get(argsMap, ArgsKey.KEY_OUT_DIR.value),
                 cmd,
                 indexCount,
