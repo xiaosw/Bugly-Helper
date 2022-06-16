@@ -2,6 +2,7 @@ package com.doudou.bugly
 
 import com.doudou.bugly.bean.SoInfo
 import com.doudou.bugly.callback.Callback
+import com.doudou.bugly.config.AppConfig
 import com.doudou.bugly.manager.BuglyManager
 import com.doudou.bugly.manager.CallStackDecoder
 import com.google.gson.Gson
@@ -39,9 +40,6 @@ const val KEY_DECODER_ADDR = "-decode"
 
 const val APP_VER_SPLIT = "&"
 const val TEST = false
-
-var isDebug = false
-    private set
 
 @JvmName("main")
 fun main(vararg args: String) {
@@ -81,9 +79,9 @@ fun main(vararg args: String) {
                 argsMap[getKey(args[i])] = args[i + 1]
             }
         }
-        isDebug = "true".equals(argsMap[getKey("-debug")], true)
+        AppConfig.isDebug = "true".equals(argsMap[getKey("-debug")], true)
 
-        if (isDebug) {
+        if (AppConfig.isDebug) {
             argsMap.forEach { (key, value) ->
                 Log.i("arg: $key = $value")
             }
@@ -128,13 +126,16 @@ fun main(vararg args: String) {
     }
 }
 
+private fun handleJsonStr(json: String) = if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
+    json.replace("\\\\", "##**!?!**##")
+        .replace("\\", "\\\\")
+        .replace("\\##**!?!**##", "\\\\")
+} else json
+
 private fun parseAbis(abis: String?) = abis?.let {
     val abisType = object : TypeToken<MutableMap<String, SoInfo>>(){}.type
     try {
-        val abisJson = if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
-            abis.replace("\\", "\\\\")
-        } else abis
-        GsonBuilder().disableHtmlEscaping().create().fromJson<MutableMap<String, SoInfo>>(abisJson, abisType)
+        GsonBuilder().disableHtmlEscaping().create().fromJson<MutableMap<String, SoInfo>>(handleJsonStr(abis), abisType)
     } catch (e: Exception) {
         Log.e(e.message)
         mutableMapOf()
@@ -149,7 +150,7 @@ private fun decodeAddrs(argsMap: MutableMap<String, String>, cmd: String) {
             pause()
             return
         }
-        val soInfo = Gson().fromJson(argsMap[getKey(ArgsKey.KEY_ABIS.value)], SoInfo::class.java)
+        val soInfo = Gson().fromJson(handleJsonStr(abi), SoInfo::class.java)
         try {
             val decodeFile = File(content)
             val decodeContent = if (decodeFile.exists() && decodeFile.isFile) {
@@ -212,7 +213,7 @@ private fun generatorExcel(appVer: String?, argsMap: MutableMap<String, String>,
     }.start()
 }
 
-private fun pause(time: Long = 10_000) = Thread.sleep(time)
+private fun pause(time: Long = 60_000) = Thread.sleep(time)
 
 private fun get(argMap: MutableMap<String, String>, key: String) : String {
     return argMap[getKey(key)] ?: ""

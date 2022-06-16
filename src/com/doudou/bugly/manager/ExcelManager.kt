@@ -4,8 +4,11 @@ import com.doudou.bugly.Log
 import com.doudou.bugly.bean.AdvancedSearchResponse
 import com.doudou.bugly.bean.IssueAnalysis
 import com.doudou.bugly.config.CrashExcelConfig
+import com.doudou.bugly.config.DefMsgConfig
 import org.apache.poi.ss.usermodel.Workbook
+import org.apache.poi.xssf.usermodel.XSSFColor
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import java.awt.Color
 import java.io.File
 import java.io.FileOutputStream
 import java.lang.Exception
@@ -78,7 +81,19 @@ object ExcelManager {
                         createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_STACK_FEATURE]!!).setCellValue(get(issueDocMap, "keyStack"))
                         createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_EXP_MESSAGE]!!).setCellValue(expMessage)
                         createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_STACK_DETAIL]!!).setCellValue(get(crashInfo?.crashDocMap, "callStack"))
-                        createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_STACK_DETAIL_DECODE]!!).setCellValue(get(crashInfo?.crashDocMap, "callStackDecode"))
+
+                        val callStackDecode = get(crashInfo?.crashDocMap, "callStackDecode")
+                        val callStackDecodeStyle = createCellStyle()
+                        if (callStackDecode.startsWith(DefMsgConfig.NOT_FIND_ADDR)
+                            || callStackDecode.startsWith(DefMsgConfig.NOT_CONFIG_ABI)) {
+                            callStackDecodeStyle.setFont(createFont().apply {
+                                setColor(XSSFColor(Color.RED, null))
+                            })
+                        }
+                        createCell(CrashExcelConfig.columns[CrashExcelConfig.TITLE_STACK_DETAIL_DECODE]!!).apply {
+                            setCellValue(callStackDecode)
+                            cellStyle = callStackDecodeStyle
+                        }
                         val detailUrl = if ("ANR_EXCEPTION".equals(expName, true)) {
                             BuglyManager.URL_ANR_ANALYSIS_ISSUE_DETAIL
                         } else {
@@ -101,7 +116,7 @@ object ExcelManager {
                     }
                 }
             }
-
+            Log.i("createCrashTable complete!")
             val excelName = if (name.endsWith(".xls") || name.endsWith(".xlsx")) {
                 name
             } else {
@@ -116,8 +131,7 @@ object ExcelManager {
             } else {
                 outDir + File.separator + excelName
             }
-            val p = saveFile(this, path)
-            Log.i("createCrashTable complete: ${if (p != null) "success!" else "fail!"}")
+            saveFile(this, path)
         }
     }
 

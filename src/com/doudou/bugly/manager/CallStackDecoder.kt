@@ -2,6 +2,8 @@ package com.doudou.bugly.manager
 
 import com.doudou.bugly.Log
 import com.doudou.bugly.callback.Callback
+import com.doudou.bugly.config.AppConfig
+import com.doudou.bugly.config.DefMsgConfig
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.lang.Exception
@@ -15,18 +17,29 @@ object CallStackDecoder {
     private const val IGNORE_DECODE = "??:?"
 
     fun decodeCallStack(callStack: String, cmd: String, unitySoPath: String?, il2cppSoPath: String?
-                        , appVer: String? = null, callback: Callback<String>) {
+                        , appVer: String? = null, callback: Callback<String>, cpuType: String? = null) {
         val addrs = parseAddrs(callStack)
         if (addrs.isEmpty()) {
-            callback?.onSuccess(callStack)
+//            callback?.onSuccess(callStack)
+            callback?.onSuccess(DefMsgConfig.NOT_FIND_ADDR)
             return
         }
-        decodeCallStack(addrs, cmd, unitySoPath, il2cppSoPath, appVer, callback)
+        decodeCallStack(addrs, cmd, unitySoPath, il2cppSoPath, appVer, callback, cpuType)
     }
 
     fun decodeCallStack(addrsList: MutableList<Addrs>, cmd: String, unitySoPath: String?, il2cppSoPath: String?
-                        , appVer: String? = null, callback: Callback<String>) {
+                        , appVer: String? = null, callback: Callback<String>, cpuType: String? = null) {
 
+        if (unitySoPath.isNullOrBlank() && il2cppSoPath.isNullOrBlank()) {
+            callback?.run {
+                var msg = DefMsgConfig.NOT_CONFIG_ABI
+                cpuType?.also {
+                    msg += "【$it】"
+                }
+                onSuccess(msg)
+            }
+            return
+        }
         val cmdPrefix = cmd
         object : Thread("${appVer ?: "all_version"}_decode_stack"){
             override fun run() {
@@ -59,8 +72,10 @@ object CallStackDecoder {
                                     }
                                 }
                             }
-                        } ?: sb.append("not find decode so path!\n").also {
-                            Log.e("not find so path!")
+                        } ?: sb.append("${DefMsgConfig.NOT_CONFIG_ABI}\n").also {
+                            if (AppConfig.isDebug) {
+                                Log.e("not find so path!")
+                            }
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()

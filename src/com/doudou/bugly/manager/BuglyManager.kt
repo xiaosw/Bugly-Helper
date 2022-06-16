@@ -4,6 +4,7 @@ import com.doudou.bugly.bean.*
 import com.doudou.bugly.callback.Callback
 import com.doudou.bugly.http.OkHttpUtil
 import com.doudou.bugly.Log
+import com.doudou.bugly.config.AppConfig
 import com.google.gson.Gson
 import java.lang.Exception
 import java.util.concurrent.atomic.AtomicInteger
@@ -431,7 +432,7 @@ object BuglyManager {
                         val callStack = it.crashInfo?.crashDocMap?.get("callStack")?.toString() ?: ""
                         val cpuType = it.crashInfo?.crashDocMap?.get("cpuType")?.toString()?.toLowerCase() ?: ""
                         val so = abis[cpuType]
-                        if (null == so) {
+                        if (null == so && AppConfig.isDebug) {
                             val issueId = it.crashInfo?.crashDocMap?.get("issueId")?.toString()?.toLowerCase() ?: ""
                             Log.e("【$issueId】 cupType is 【$cpuType】, please config abi [-abis {\"$cpuType\":{\"unity\":\"xxx\", \"il2cpp\":\"xxx\"}}]")
                         }
@@ -470,7 +471,7 @@ object BuglyManager {
                                 }
                             }
 
-                        })
+                        }, cpuType)
                     }
                 }
 
