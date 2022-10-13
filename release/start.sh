@@ -7,12 +7,12 @@
 # token -> X-token
 java -jar Bugly-Helper.jar \
 -appId b0b1bd57b7 \
--token 2003155421 \
--cookieOld bugly-session=s%3A3JJY1_1vTyIzPfX8jkC3pQjcGrVHWF2E.8ywJtyxK37DkbxNi2OKAonepirf%2Fj6Ioc24rpsIT%2FlE \
--cookieNew bugly_session=eyJpdiI6IlhBXC9rWDJjOWlWVW1LQ3dmS2UyOVRBPT0iLCJ2YWx1ZSI6IndNVzR2NzhFQ3VzYklsVTkxdDhoZlJCVFFiNGh3OXlaQWNjN3dZOHA0U1JsYUFcL1hZWXBlbkVzUVwvaVNsSVlSVXhudStoYThcL2thalJ3V0pSMklUbGFRPT0iLCJtYWMiOiIyNmY0NDU4ZTVkZGJjOTAxZTA1MzlhOGFhN2QxZjVlYzA3ZmEzMjQ2YWFmMjNlZTY3ZGIyMDgzODg5YTVlN2M2In0%3D \
--appVer "1.0.7" \
--startDateStr 2022-06-16 \
--endDateStr 2022-06-16 \
+-token 1635092223 \
+-cookieOld bugly_session=s%3Ad6IijAW67BZv9IJGZGFPbYg6abULEmUY.M%2BGl%2BLLM7FQtFOuOuUn7oLiGmQcBLBPb9qkJpKWTyBw \
+-cookieNew bugly_session=eyJpdiI6Imd6WFUrbnRZdjdONEJzTmo1N3l4Rnc9PSIsInZhbHVlIjoiaEJhc256TjlGRjF0N1lJZUxVZFZIQVE1RW54OWwzaE5yVFVaNHBkQU1KWU01dno1M1VWM2ZKdjFuQUFJdjZsamtCdUFoNVR2TCtIUXRkWU9CUU9hSEE9PSIsIm1hYyI6IjJjYWNhYWU2NjM2OGQyN2QxM2Q5ZGE1NzU3NzM3OTk2OTY0MzM1ZWU5ZjA5YTcwYzcwZTYzNmZkZDI0ZjZjOTIifQ%3D%3D \
+-appVer "2.0.0" \
+-startDateStr 2022-10-10 \
+-endDateStr 2022-10-13 \
 -pageIndex 0 \
 -pageSize 100 \
 -debug false \

@@ -44,6 +44,19 @@ const val TEST = false
 @JvmName("main")
 fun main(vararg args: String) {
     try {
+        val argss = arrayOf("-appId", "b0b1bd57b7",
+            "-token", "3783489",
+            "-cookieOld", "bugly-session=s%3Ad6IijAW67BZv9IJGZGFPbYg6abULEmUY.M%2BGl%2BLLM7FQtFOuOuUn7oLiGmQcBLBPb9qkJpKWTyBw",
+            "-cookieNew", "bugly_session=eyJpdiI6IjNCdnhMYW9YYmE3dG1HNDBLamdNVHc9PSIsInZhbHVlIjoiT09IbDRIWk1tRWFHRUdsSFRcL2NFU1Q0TklsNjVyQ0ZGUGxIUU1uREpYeVFGckdEa1ZBSG55NlZ6MWw3K3BOWjhsY3YwNEVGRWNlSU0wXC8ydytYMkJPUT09IiwibWFjIjoiZWZjNTg2YWFmZDkyZjBhNTVkY2JlNzEzZjdiYjBiZTZiYzE5OTliMDczZmVhOGE1OGJhMmUyNzcyMGMyOTg2NCJ9",
+            "-appVer", "2.0.0",
+            "-startDateStr", "2022-10-10",
+            "-endDateStr", "2022-10-13",
+            "-pageIndex", "0",
+            "-pageSize", "100",
+            "-debug", "false",
+            "-abis", "{\"arm64-v8a\":{\"unity\":\"E:\\Workspace\\Demo\\Bugly-Helper\\release\\libs\\arm64-v8a\\libunity.sym.so\", \"il2cpp\":\"E:\\Workspace\\Demo\\Bugly-Helper\\release\\libs\\arm64-v8a\\libil2cpp.so\"}, \"armeabi-v7a\":{\"unity\":\"E:\\Workspace\\Demo\\Bugly-Helper\\release\\libs\\arm64-v8a\\libunity.sym.so\", \"il2cpp\":\"E:\\Workspace\\Demo\\Bugly-Helper\\release\\libs\\arm64-v8a\\libil2cpp.so\"}}",
+            "-out", "E:\\Workspace\\Demo\\Bugly-Helper\\release\\build",
+            "-cmd", "D:\\Dev\\NDK\\ndk-r19c\\android-ndk-r19c\\toolchains\\aarch64-linux-android-4.9\\prebuilt\\windows-x86_64\\bin\\aarch64-linux-android-addr2line.exe -C -f -e")
         Log.i("launch bugly helper.")
         if (TEST) {
 //            BuglyManager.generatorExcel("2527295ba1",

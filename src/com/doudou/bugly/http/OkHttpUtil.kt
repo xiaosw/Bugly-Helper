@@ -22,6 +22,7 @@ object OkHttpUtil {
             .get()
             .addHeader("X-token", xToken)
             .addHeader("cookie", cookie)
+            .addHeader("Referer", "https://bugly.qq.com/v2/workbench/apps")
             .build()
         mOkHttpClient.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
@@ -52,6 +53,30 @@ object OkHttpUtil {
 
             override fun onResponse(call: Call, response: Response) {
                 callback.onComplete(rowIndex, response.body()?.string())
+            }
+
+        })
+    }
+
+    fun post(url: String, params: Map<String, String?>, callback: CommonCallback? = null) {
+        val body = FormBody.Builder().apply {
+            params?.forEach { (key, value) ->
+                add(key, value)
+            }
+        }.build()
+        val request = Request
+            .Builder()
+            .url(url)
+            .post(body)
+            .build()
+        mOkHttpClient.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                e.printStackTrace()
+                callback?.onComplete(-1, e.message)
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                callback?.onComplete(200, response.body()?.string())
             }
 
         })
